@@ -1,6 +1,6 @@
 # Cork Music Station rebuild: progress
 
-Last updated 8 November 2026. Work is stopped at the end of Stage 2, waiting for the owner's approval.
+Last updated 8 November 2026. Stages 3 and 4 are done locally. `site/` is built and tested on this computer, waiting for the owner's review. Nothing has been published.
 
 ## Finished
 
@@ -19,9 +19,12 @@ Last updated 8 November 2026. Work is stopped at the end of Stage 2, waiting for
 
 ## Not finished
 
-- **Stage 2 approval:** not given yet. The questions below are still open.
-- **Stage 3, build:** not started. `site/` does not exist.
-- **Stage 4, verify:** not started. `UPDATING.md` is not written and the site has not been run locally.
+- **Owner's review of `site/`:** not done yet. Screenshots at 390px and 1280px are in `review/`. Run `preview.ps1` to see the site at http://localhost:8321/.
+- **Stream:** the Radiojar listener address is in `site/data/config.js`. The broadcast password is not stored in this project and must never be. Full functional test passed in Chrome on 8 November 2026 with the real stream, including from an https page.
+- **Not tested yet:** real phones, especially iPhone Safari. Radiojar redirects listeners to a plain http server, which Chrome handled but Safari may treat differently, so test on an iPhone once the site is on https. The two Facebook links cannot be checked automatically.
+- **Next:** styling pass with the owner.
+- **Not committed:** `site/`, `review/`, `asset-map.csv`, `preview.ps1` and `UPDATING.md` are not in git yet.
+- **Stage 4 results, 8 November 2026:** every internal link, image and MP3 passed at both widths in Chrome. After the owner's changes: 691 files, largest 23.3 MiB. `asset-map.csv` shows where each original went. Of 632 downloaded files, 571 are used. The other 61 are 9 old pages and site files (rebuilt), 3 builder files, 21 theme graphics, 5 larger duplicates of home page slides, and 23 files the owner chose to remove.
 - **Nothing has been published or pushed.**
 
 `source/` is in `.gitignore`, so the copy, `manifest.csv` and `AUDIT.md` are not in git. They exist only on this computer.
@@ -46,23 +49,78 @@ From the original brief:
 - **Keep originals** in `source/` and out of `site/`.
 - **Stage 4 checks:** run locally and give the address. Test every internal link, image and MP3 at phone and desktop widths. Confirm every manifest file is used or explain why not. No file over 25 MiB, and under 20,000 files in `site/`. Write `UPDATING.md` in plain English: changing the schedule, adding a poster, adding an interview, changing the stream address.
 
-## Questions waiting for the owner
+## Owner's changes after reviewing the site (8 November 2026)
 
-1. Which suspected errors in `source/AUDIT.md` are approved for correction, and what are the right times for the unclear shows?
-2. Where should the 165 uncaptioned home page slides go? Suggested: a "From the station's collection" album, plus a short rotating selection on the home page.
-3. Who presented the five "Interview With…" recordings (Pat Mulchrone, Michelle Murphy, Eddie Lee, Joe Davitt, John Molloy)? They sit under Mike Murphy. Should George get his own filter for the Margo interview?
-4. Should the 2 posters found only on the home page go on Gig Guide (`john-joes-dances-2026.jpg`, `paddy-ob-nov-2026-copy.jpg`)?
-5. Can the undated albums keep their current position (Liam Cantillon, Salthill, Cahir House, Rally Cars)?
-6. Is there a backup somewhere else to compare against?
-7. How should the 10 MP3s over 25 MiB be handled (compress or host elsewhere)? The largest is 56 MiB. The brief requires no file over 25 MiB and also all 24 MP3s kept.
+These replace anything different in the original brief above.
+
+- **Removed from `site/` (originals remain in `source/`):** all 19 interviews in the Mike Murphy and Michelle Murphy sections, leaving 5; the phone-screenshot poster `paddy-ob-nov-2026-copy` (also from the collection album), leaving 8 posters; Lisa McHugh's whole Links entry.
+- **Removed features:** the chat room and the visitor counter. Neither is wanted.
+- **Radio:** autoplay replaces "no autoplay". It tries to start when the site opens, or on the first tap if the browser blocks it. The player is in the page and keeps playing between pages, replacing the pop-out window.
+- **Look:** Cork red and white, no badges or crests, sharper and more modern. One font for all text, Atkinson Hyperlegible, stored in `site/assets/fonts/`.
+- **Clock:** shows Irish time and the visitor's own time.
+- **Planned, not built:** an updating app for the station's editor, including choosing the home page photos. Those are listed in `site/data/home-photos.js`, ready for it.
+
+## Owner's answers to the Stage 2 questions (8 November 2026)
+
+1. **Schedule times, as confirmed by the owner:**
+   - Monday, George F Langan: 10.30 pm - Late (the finish varies, so there is no fixed end time)
+   - Tuesday, Jimmy Reidy: 8.00 - 9.00 pm
+   - Thursday, John Nip: 7.30 - 9.00 pm
+   - Thursday, Danny Tobin: 9.00 - 10.00 pm
+   - Thursday, Willie: 10.00 pm - 12.00 midnight
+   - Thursday night, Vincent Murray: 12.00 - 2.00 am (Repeat). Technically Friday morning, but it continues on from the Thursday night programme.
+   - Saturday, David Marks: 11.00 am - 1.00 pm
+   - Saturday, Jimmy Reidy: 1.00 - 2.00 pm
+   - Saturday, George F Langan: 8.00 pm - 12.30 am
+
+   **Spelling and punctuation:**
+   - Approved, using the suggested wording:
+     - Georges Late Show becomes George's Late Show
+     - Georges Country Corner becomes George's Country Corner
+     - Willies Country Favourites becomes Willie's Country Favourites
+     - Barry O\` Halloran becomes Barry O'Halloran
+     - Jimmy Reidy Music Show (Saturday repeat) becomes Jimmy Reidy's Music Show
+     - Danny becomes Danny Tobin throughout
+     - For Request becomes For Requests
+     - E mail / e mail to: becomes Email / Email to:
+     - Corkmusicstation@gmail.com becomes corkmusicstation@gmail.com
+     - (irish Time) becomes (Irish Time)
+     - Stray full stops after two schedule entries and two email addresses are removed
+     - Our Dear Departed DJ'S becomes Our Dear Departed DJs
+     - Gone But Not forgotten becomes Gone But Not Forgotten
+     - Seamus Fitzsimmon becomes Seamus Fitzsimmons
+   - Stays as written: Normand Boland.
+   - Also approved, using the suggested wording:
+     - Michelle\`s Thank yous becomes Michelle's Thank yous
+     - .Interview With John Molloy. becomes Interview With John Molloy
+     - Willie Interviews Michelle. becomes Willie Interviews Michelle Murphy
+     - MP3 download names are corrected ("intervies", "morrisey", double dots)
+     - Glor Tire becomes Glór Tíre (4 albums)
+     - Paddy O\` Brien / Paddy O Brien becomes Paddy O'Brien
+     - Hugh O Brien becomes Hugh O'Brien
+     - Caroline\`s Fundraiser 2013 becomes Caroline's Fundraiser 2013
+     - Tipp F.M Country Music Award's becomes Tipp FM Country Music Awards
+     - Gloria,Heart to Heart becomes Gloria, Heart to Heart
+     - Gina,Dale Haze becomes Gina, Dale Haze
+     - lisaMcHugh becomes Lisa McHugh
+     - http://www. dannyolearymusic .com becomes www.dannyolearymusic.com
+     - Danny O Leary becomes Danny O'Leary
+   - Owner's own wording: Kades Kounty becomes Kade's County.
+   - Stays as written: Castleahan (no alternative was suggested).
+2. **165 uncaptioned slides:** a "From the station's collection" album, plus a short rotating selection on the home page.
+3. **Archives filters:** the five "Interview With…" recordings (Pat Mulchrone, Michelle Murphy, Eddie Lee, Joe Davitt, John Molloy) stay under Mike Murphy. George gets his own filter for the Margo interview.
+4. **Posters:** add both home-page-only posters to Gig Guide (`john-joes-dances-2026.jpg`, `paddy-ob-nov-2026-copy.jpg`), making 9.
+5. **Undated albums** keep their current position (Liam Cantillon, Salthill, Cahir House, Rally Cars).
+6. **Backup:** there is none to compare against.
+7. **MP3s over 25 MiB:** compress only those 10 to under 25 MiB for `site/`. The originals stay untouched in `source/`.
 
 ## Known problems
 
 - **No backups were compared.** `source/` did not exist before the crawl.
 - **Small gallery photos.** The gallery has no full-size links, and 321 of the 375 photos are old uploads, mostly about 333 x 249 pixels. Larger hidden versions were not looked for.
-- **10 MP3s are over 25 MiB** (see question 7).
-- **Schedule times:** 2 look wrong and 7 are unclear, all listed in the audit. Any show without a clear time cannot be highlighted as on air.
-- **Spelling and name queries** are listed in the audit. None have been changed.
+- **MP3s over 25 MiB:** of the 5 interviews kept, Breeda's, George's and Willie's Michelle Murphy interview were compressed with ffmpeg (installed with winget) to mono at 80 to 128 kbps. The originals are untouched in `source/`.
+- **Schedule times:** all 9 queried times are now confirmed (see answer 1). George F Langan's Monday show has no fixed end time, so it is highlighted as on air until midnight. The page still reads "10.30 pm - Late".
+- **Spelling and name queries** are listed in the audit. Answer 1 records the decision on each. The audit and the copy in `source/` are not changed; approved corrections apply when `site/` is built.
 - **Dead on the live site:** the AddonChat server, `lisa-mchugh.com`, the FatCow link, and the old Google Analytics code.
 - **Not verified:** two Facebook links in the gallery, because Facebook rejects automated checks.
 - **27 home page slides** return 404 under their listed names. All were saved under `_orig` or `published/` names and noted in the manifest.
