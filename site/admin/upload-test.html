@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en-IE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Upload Test - Owner Only</title>
+<style>
+  :root { color-scheme: light; }
+  body { font: 20px/1.5 system-ui, sans-serif; margin: 24px; max-width: 760px; background: #fff; color: #222; }
+  button { font: inherit; padding: 12px 24px; }
+  pre { background: #f2f2f2; padding: 12px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<h1>Upload test (owner only)</h1>
+<p>Stage 1 measuring tool. Sends 120 made-up pictures to GitHub as unattached blobs, the size of a full 60-photo go, at a safe pace. Nothing appears on the website or in the history. It takes about 3 minutes. Delete this page and its function before Stage 3.</p>
+<button id="go" type="button">Start</button>
+<pre id="out" role="status">Waiting.</pre>
+<script>
+(function () {
+  var TOTAL = 120, GAP_MS = 1200, out = document.getElementById("out"), go = document.getElementById("go");
+  function picture() {
+    var c = document.createElement("canvas"); c.width = 1600; c.height = 1200;
+    var x = c.getContext("2d"), n = 2400;
+    for (var i = 0; i < n; i++) {
+      x.fillStyle = "rgb(" + (Math.random() * 256 | 0) + "," + (Math.random() * 256 | 0) + "," + (Math.random() * 256 | 0) + ")";
+      x.fillRect(Math.random() * 1600, Math.random() * 1200, 40, 40);
+    }
+    for (var q = 0.82; q > 0.3; q -= 0.08) {
+      var data = c.toDataURL("image/jpeg", q).split(",")[1];
+      if (data.length <= 700000) return data;
+    }
+    return data;
+  }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  go.onclick = async function () {
+    go.disabled = true;
+    var ok = 0, bad = {}, sizes = 0, slowest = 0, remaining = "?", began = Date.now();
+    for (var i = 1; i <= TOTAL; i++) {
+      var data = picture(), t = performance.now(), code;
+      sizes += data.length * 0.75;
+      try {
+        var r = await fetch("/api/admin/upload-test", { method: "POST", headers: { "content-type": "text/plain" }, body: data });
+        var j = await r.json();
+        if (j.remaining) remaining = j.remaining;
+        code = j.ok ? "ok" : (j.code + " " + (j.status || r.status));
+      } catch (e) { code = "no reply"; }
+      if (code === "ok") ok++; else bad[code] = (bad[code] || 0) + 1;
+      slowest = Math.max(slowest, performance.now() - t);
+      out.textContent = i + " of " + TOTAL + "\nWorked: " + ok + "\nProblems: " + JSON.stringify(bad) +
+        "\nAverage picture: " + Math.round(sizes / i / 1024) + " KB\nSlowest reply: " + Math.round(slowest) + " ms\nGitHub requests left this hour: " + remaining +
+        "\nElapsed: " + Math.round((Date.now() - began) / 1000) + " s";
+      await wait(GAP_MS);
+    }
+    out.textContent += "\nFinished. Now read CPU time and errors in Cloudflare, under this project's Functions metrics.";
+    go.disabled = false;
+  };
+})();
+</script>
+</body>
+</html>

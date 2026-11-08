@@ -1,0 +1,9 @@
+{
+  "name": "cork-music-station",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node tools/check-site.mjs",
+    "test": "node --test tests/"
+  }
+}

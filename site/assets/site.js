@@ -1,8 +1,6 @@
 (function () {
   "use strict";
   var cfg = window.CONFIG || {};
-  var DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  var WEEK = 7 * 1440;
   var rotatorTimer = null;
 
   function el(id) { return document.getElementById(id); }
@@ -93,38 +91,12 @@
   });
 
   /* ---------- Irish time, correct across clock changes ---------- */
-  function irishNow() {
-    var parts = {};
-    new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Europe/Dublin", weekday: "long", hour: "2-digit", minute: "2-digit", hour12: false
-    }).formatToParts(new Date()).forEach(function (p) { parts[p.type] = p.value; });
-    var h = parseInt(parts.hour, 10) % 24, m = parseInt(parts.minute, 10);
-    var d = DAYS.indexOf(parts.weekday);
-    return { day: d, label: parts.hour.replace("24", "00") + ":" + parts.minute, week: d * 1440 + h * 60 + m };
-  }
+  var logic = window.CMS_LOGIC;
+  function irishNow() { return logic.irishParts(new Date()); }
   function localLabel() {
     return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
-  function mins(t) { var p = t.split(":"); return parseInt(p[0], 10) * 60 + parseInt(p[1], 10); }
-  function allShows() {
-    var list = [];
-    (window.SCHEDULE || []).forEach(function (d) {
-      var di = DAYS.indexOf(d.day);
-      d.shows.forEach(function (s) {
-        if (!s.start || !s.end) return;
-        list.push({ s: s, day: d.day, from: di * 1440 + mins(s.start), to: di * 1440 + mins(s.end) });
-      });
-    });
-    return list.sort(function (a, b) { return a.from - b.from; });
-  }
-  function current() {
-    var now = irishNow().week, list = allShows(), on = null, next = null;
-    list.forEach(function (x) {
-      if ((now >= x.from && now < x.to) || (now + WEEK >= x.from && now + WEEK < x.to)) on = x;
-    });
-    for (var i = 0; i < list.length; i++) { if (list[i].from > now) { next = list[i]; break; } }
-    return { on: on, next: next || list[0] || null };
-  }
+  function current() { return logic.current(window.SCHEDULE, irishNow()); }
   function showName(x) { return esc(x.s.presenter) + (x.s.show ? ": " + esc(x.s.show) : ""); }
   function repeatTag(x) { return x.s.repeat ? '<span class="tag">Repeat</span>' : ""; }
 
@@ -154,8 +126,8 @@
   function renderToday() {
     var box = el("today");
     if (!box || !window.SCHEDULE) return;
-    var day = window.SCHEDULE[irishNow().day];
-    box.innerHTML = "<h2>" + esc(day.day) + "'s shows</h2>" + day.shows.map(function (s) {
+    var now = irishNow(), shows = logic.showsForDate(window.SCHEDULE, now.iso);
+    box.innerHTML = "<h2>" + esc(logic.DAYS[now.day]) + "'s shows</h2>" + shows.map(function (s) {
       return '<div class="today-row"><img src="' + esc(s.photo) + '" alt="' + esc(s.presenter) + '" loading="lazy"><div>' +
         '<p class="name">' + esc(s.presenter) + (s.repeat ? '<span class="tag">Repeat</span>' : "") + "</p>" +
         (s.show ? "<p>" + esc(s.show) + "</p>" : "") + "<p>" + esc(s.time) + "</p></div></div>";
@@ -165,13 +137,13 @@
   function renderSchedule() {
     var box = el("schedule");
     if (!box) return;
-    var today = DAYS[irishNow().day], c = current(), jump = "", html = "";
-    window.SCHEDULE.forEach(function (d) {
+    var now = irishNow(), today = logic.DAYS[now.day], c = current(), jump = "", html = "";
+    logic.weekView(window.SCHEDULE, now).forEach(function (d) {
       var isToday = d.day === today;
       jump += '<a href="#' + d.day + '"' + (isToday ? ' class="today"' : "") + ">" + d.day + (isToday ? " (today)" : "") + "</a>";
       html += '<section class="day" id="' + d.day + '"><h2>' + d.day + "</h2>";
       d.shows.forEach(function (s) {
-        var on = c.on && c.on.s === s;
+        var on = c.on && c.on.s.id === s.id;
         html += '<article class="show' + (on ? " on-air" : "") + '"><img src="' + esc(s.photo) + '" alt="' + esc(s.presenter) + '" loading="lazy"><div>' +
           (on ? '<p><span class="tag tag-air">On air now</span></p>' : "") +
           "<h3>" + esc(s.presenter) + "</h3>" +
@@ -187,8 +159,9 @@
   function renderPosters() {
     var box = el("posters");
     if (!box) return;
-    var total = window.POSTERS.length;
-    box.innerHTML = window.POSTERS.map(function (p, i) {
+    var list = logic.visiblePosters(window.POSTERS, irishNow().iso), total = list.length;
+    if (!total) { box.innerHTML = "<p>No gigs are listed at the moment. Please check back soon.</p>"; return; }
+    box.innerHTML = list.map(function (p, i) {
       var name = "Gig poster " + (i + 1) + " of " + total;
       return '<a href="' + esc(p.file) + '" target="_blank" rel="noopener"><img src="' + esc(p.file) + '" width="' + p.w + '" height="' + p.h + '" alt="' + name + '" loading="lazy"><span>Open full size</span></a>';
     }).join("");

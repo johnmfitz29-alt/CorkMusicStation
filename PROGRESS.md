@@ -17,6 +17,8 @@ Last updated 8 November 2026. Stages 3 and 4 are done locally. `site/` is built 
 - `CLAUDE.md` holds the standing rules.
 - Git is set up locally, with `source/` in `.gitignore`.
 
+**Admin area, `SPEC.md` Stage 1 (8 November 2026):** code done locally and tested, not committed. See "Stage 1 results" in `SPEC.md`. Waiting on the owner for `TO-APPROVE.md` and `SETUP-CHECKLIST.md`. Node.js was installed with winget to run the tests (`npm test`).
+
 ## Not finished
 
 - **Owner's review of `site/`:** not done yet. Screenshots at 390px and 1280px are in `review/`. Run `preview.ps1` to see the site at http://localhost:8321/.
