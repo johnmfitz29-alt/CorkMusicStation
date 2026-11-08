@@ -186,6 +186,8 @@ Each has a fixed result. "Pass" means the listed result was observed.
 | Sun Vincent Murray | 8.00 pm - 10.00 pm |
 | Sun Jimmy Reidy | 10.00 pm - 11.15 pm |
 
+Also approved by the owner on 8 November 2026: the schedule shows Breeda as Breeda Piggott and Willie as Willie Fitzgerald. Show titles and contact lines are unchanged.
+
 ## 6. Four-stage plan
 
 Each stage ends with the owner's review. Nothing is pushed or put online without the owner asking at that point.

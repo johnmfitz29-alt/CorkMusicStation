@@ -17,12 +17,12 @@ window.SCHEDULE = {
 ]},
 { "day": "Wednesday", "shows": [
   {"id":"wed-tim-coughlan-1900","presenter":"Tim Coughlan","time":"7.00 pm - 9.00 pm","start":"19:00","end":"21:00","contact":"For Requests Email {email}","photo":"images/presenters/tim-coughlan-photo-3.jpg"},
-  {"id":"wed-breeda-2100","presenter":"Breeda","time":"9.00 pm - 11.30 pm","start":"21:00","end":"23:30","contact":"For Requests Text Breeda On 087 6251029 Email {email}","photo":"images/presenters/675619115.jpg"}
+  {"id":"wed-breeda-2100","presenter":"Breeda Piggott","time":"9.00 pm - 11.30 pm","start":"21:00","end":"23:30","contact":"For Requests Text Breeda On 087 6251029 Email {email}","photo":"images/presenters/675619115.jpg"}
 ]},
 { "day": "Thursday", "shows": [
   {"id":"thu-john-nip-1930","presenter":"John Nip","show":"The John Nip Show","time":"7.30 pm - 9.00 pm","start":"19:30","end":"21:00","contact":"For Requests Text John Nip 087 2207939 Email {email}","photo":"images/presenters/john-nip_1.jpg"},
   {"id":"thu-danny-tobin-2100","presenter":"Danny Tobin","show":"The Danny Tobin Show","time":"9.00 pm - 10.00 pm","start":"21:00","end":"22:00","contact":"For Requests Email Danny on {email}","photo":"images/presenters/danny.jpg"},
-  {"id":"thu-willie-2200","presenter":"Willie","show":"Willie's Country Favourites","time":"10.00 pm - 12.00 midnight","start":"22:00","end":"24:00","contact":"For Requests Text Willie 087 2229874 Email {email}","photo":"images/presenters/144531591.jpg"},
+  {"id":"thu-willie-2200","presenter":"Willie Fitzgerald","show":"Willie's Country Favourites","time":"10.00 pm - 12.00 midnight","start":"22:00","end":"24:00","contact":"For Requests Text Willie 087 2229874 Email {email}","photo":"images/presenters/144531591.jpg"},
   {"id":"thu-vincent-murray-2400","presenter":"Vincent Murray","time":"12.00 midnight - 2.00 am","repeat":true,"start":"24:00","end":"26:00","contact":"For Requests Text Vincent on 086 3746180","photo":"images/presenters/vincent-photo_orig.jpg"}
 ]},
 { "day": "Friday", "shows": [

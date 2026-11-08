@@ -22,6 +22,7 @@ function logic() {
 const L = logic();
 const at = (utc) => L.irishParts(new Date(utc));
 const clean = (v) => JSON.parse(JSON.stringify(v));
+const FULL_NAMES = { Breeda: "Breeda Piggott", Willie: "Willie Fitzgerald" }; // approved by the owner, 8 November 2026
 
 test("every editable data file is strict JSON", () => {
   assert.equal(schedule().weekly.length, 7);
@@ -30,8 +31,8 @@ test("every editable data file is strict JSON", () => {
   assert.ok(parseDataFile(dataText("home-photos.js"), "HOME_PHOTOS").length >= 3);
 });
 
-test("schedule conversion changed only the approved time text (R35)", () => {
-  const oldText = execFileSync("git", ["show", "af6fd80:site/data/schedule.js"], { cwd: root, encoding: "utf8" });
+test("schedule conversion changed only the approved time text and two approved names (R35)", () => {
+  const oldText = execFileSync("git", ["show", "2350161:site/data/schedule.js"], { cwd: root, encoding: "utf8" });
   const box = { window: {} };
   vm.runInNewContext(oldText, box);
   const before = clean(box.window.SCHEDULE);
@@ -43,7 +44,7 @@ test("schedule conversion changed only the approved time text (R35)", () => {
     day.shows.forEach((show, s) => {
       const { id, late, time, ...rest } = after[d].shows[s];
       const { time: oldTime, ...oldRest } = show;
-      assert.deepEqual(rest, oldRest);
+      assert.deepEqual(rest, { ...oldRest, presenter: FULL_NAMES[oldRest.presenter] ?? oldRest.presenter });
       assert.ok(id);
     });
   });
@@ -196,7 +197,7 @@ test("build check catches invalid data (R51)", () => {
     "clash": { "schedule.js": scheduleText().replace('"start":"21:00","end":"22:00"', '"start":"20:00","end":"22:00"') },
     "finish before start": { "schedule.js": scheduleText().replace('"start":"19:30","end":"21:00"', '"start":"21:00","end":"19:30"') },
     "missing photo": { "schedule.js": scheduleText().replace("tim-coughlan-photo-3.jpg", "nobody.jpg") },
-    "script in name": { "schedule.js": scheduleText().replace('"presenter":"Breeda"', '"presenter":"<script>"') },
+    "script in name": { "schedule.js": scheduleText().replace('"presenter":"David Marks"', '"presenter":"<script>"') },
     "impossible poster date": { "posters.js": 'window.POSTERS=[{"file":"images/posters/pob-2026.jpg","w":1,"h":1,"lastDate":"2027-02-29"}];' },
     "missing poster": { "posters.js": 'window.POSTERS=[{"file":"images/posters/gone.jpg","w":1,"h":1}];' },
     "too few home photos": { "home-photos.js": "window.HOME_PHOTOS=[];" },
@@ -218,8 +219,8 @@ test("build check catches an admin commit outside the allow-list (R52, R78)", ()
   assert.deepEqual(checkSite(root, { gitLog: owner }).failures, []);
 });
 
-test("names draft holds protected spellings and no known misspelling as a correct name (R38)", () => {
-  const names = parseDataFile(fs.readFileSync(path.join(root, "drafts/names.js"), "utf8"), "NAMES");
+test("approved names list holds protected spellings and no known misspelling as a correct name (R38)", () => {
+  const names = parseDataFile(fs.readFileSync(path.join(root, "site/data/names.js"), "utf8"), "NAMES");
   const all = [...names.presenters, ...names.events, ...names.venues, ...names.protected];
   for (const keep of ["Normand Boland", "Castleahan", "Seán Radley", "Glór Tíre"]) {
     assert.ok(all.some((n) => n.includes(keep)), keep);

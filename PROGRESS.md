@@ -25,7 +25,7 @@ Last updated 8 November 2026. Stages 3 and 4 are done locally. `site/` is built 
 - **Stream:** the Radiojar listener address is in `site/data/config.js`. The broadcast password is not stored in this project and must never be. Full functional test passed in Chrome on 8 November 2026 with the real stream, including from an https page.
 - **Not tested yet:** real phones, especially iPhone Safari. Radiojar redirects listeners to a plain http server, which Chrome handled but Safari may treat differently, so test on an iPhone once the site is on https. The two Facebook links cannot be checked automatically.
 - **Next:** styling pass with the owner.
-- **Git:** the first full build is committed locally as `01c02fd`. The medium wine-red restyle and `review/style-samples/` are not committed yet. Nothing has been pushed.
+- **Git:** the first full build is committed locally as `930be95`. The medium wine-red restyle and `review/style-samples/` are not committed yet. Nothing has been pushed.
 - **Stage 4 results, 8 November 2026:** every internal link, image and MP3 passed at both widths in Chrome. After the owner's changes: 691 files, largest 23.3 MiB. `asset-map.csv` shows where each original went. Of 632 downloaded files, 571 are used. The other 61 are 9 old pages and site files (rebuilt), 3 builder files, 21 theme graphics, 5 larger duplicates of home page slides, and 23 files the owner chose to remove.
 - **Nothing has been published or pushed.**
 
@@ -61,6 +61,14 @@ These replace anything different in the original brief above.
 - **Look (chosen from samples in `review/style-samples/`, `mix-medium`):** a station column holding the original single-disc logo, name, Listen button and menu, across the top on phones and down the side on large screens. Deep wine-red page, darker wine column, ivory Listen button, no badges or crests. One font for all text, Atkinson Hyperlegible, stored in `site/assets/fonts/`. The home page also shows the presenter on air and today's shows.
 - **Clock:** shows Irish time and the visitor's own time.
 - **Planned, not built:** an updating app for the station's editor, including choosing the home page photos. Those are listed in `site/data/home-photos.js`, ready for it.
+
+## Owner's approvals for the admin area (8 November 2026)
+
+- All 8 posters now have last dates. Four had already passed, so they are hidden: sligo-1-copy, john-joes-dances-2026, rui-glenn-2026-copy_orig, michal-commins-nov-1-copy_orig. The picture files remain.
+- `site/data/names.js` holds the approved names list and 16 misspelling pairs.
+- Schedule presenter names changed: Breeda becomes Breeda Piggott, Willie becomes Willie Fitzgerald.
+- Archives titles changed: Sean Interviews Ger Wolfe becomes Seán Interviews Ger Wolfe; the full stop is removed from Willie Interviews Louise Morrissey.
+- Willie and Willie Fitzgerald are the same person, as are George and George F Langan.
 
 ## Owner's answers to the Stage 2 questions (8 November 2026)
 

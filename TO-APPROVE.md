@@ -1,6 +1,8 @@
 # To approve before launch
 
-Two things only you can settle. Nothing here is live, and I haven't guessed any of it. Reply with changes, or say "all approved".
+Two things only you can settle. Nothing here is live, and I haven't guessed any of it.
+
+**The easiest way to answer is the form:** double-click `review/approvals.html`. This file is the same content for reading.
 
 ## 1. Last date for each poster
 
