@@ -126,7 +126,7 @@
     return { on: on, next: next || list[0] || null };
   }
   function showName(x) { return esc(x.s.presenter) + (x.s.show ? ": " + esc(x.s.show) : ""); }
-  function repeatTag(x) { return x.s.repeat ? '<span class="tag tag-repeat">Repeat</span>' : ""; }
+  function repeatTag(x) { return x.s.repeat ? '<span class="tag">Repeat</span>' : ""; }
 
   function renderOnAir() {
     var box = el("onair");
@@ -134,7 +134,8 @@
     var c = current();
     /* The 24/7 line appears in the panel when no show is on, so it is not repeated above it */
     if (el("tagline")) el("tagline").classList.toggle("sr", !c.on);
-    var html = '<div><p class="label"><span class="tag tag-air">On air now</span></p>';
+    var html = (c.on ? '<img class="onair-photo" src="' + esc(c.on.s.photo) + '" alt="' + esc(c.on.s.presenter) + '">' : "") +
+      '<div class="now"><p class="label"><span class="tag tag-air">On air now</span></p>';
     if (c.on) {
       html += '<p class="who">' + showName(c.on) + repeatTag(c.on) + "</p><p>" + esc(c.on.s.time) + "</p>";
     } else {
@@ -142,10 +143,23 @@
     }
     html += '<p class="clocks"><span>Irish time: <b>' + irishNow().label + "</b></span><span>Your time: <b>" + esc(localLabel()) + "</b></span></p></div>";
     if (c.next) {
-      html += '<div><p class="label">Next</p><p class="next-who">' + showName(c.next) + repeatTag(c.next) +
+      html += '<div class="next"><p class="label">Next</p><p class="next-who">' + showName(c.next) + repeatTag(c.next) +
         "</p><p>" + esc(c.next.day) + ", " + esc(c.next.s.time) + "</p></div>";
     }
-    box.innerHTML = html;
+    box.classList.toggle("has-photo", !!c.on);
+    /* Only redraw when something changed, so the photo doesn't flicker */
+    if (box.dataset.drawn !== html) { box.innerHTML = html; box.dataset.drawn = html; }
+  }
+
+  function renderToday() {
+    var box = el("today");
+    if (!box || !window.SCHEDULE) return;
+    var day = window.SCHEDULE[irishNow().day];
+    box.innerHTML = "<h2>" + esc(day.day) + "'s shows</h2>" + day.shows.map(function (s) {
+      return '<div class="today-row"><img src="' + esc(s.photo) + '" alt="' + esc(s.presenter) + '" loading="lazy"><div>' +
+        '<p class="name">' + esc(s.presenter) + (s.repeat ? '<span class="tag">Repeat</span>' : "") + "</p>" +
+        (s.show ? "<p>" + esc(s.show) + "</p>" : "") + "<p>" + esc(s.time) + "</p></div></div>";
+    }).join("") + '<p style="margin-top:14px"><a href="dj-schedule.html">See the full schedule</a></p>';
   }
 
   function renderSchedule() {
@@ -161,7 +175,7 @@
         html += '<article class="show' + (on ? " on-air" : "") + '"><img src="' + esc(s.photo) + '" alt="' + esc(s.presenter) + '" loading="lazy"><div>' +
           (on ? '<p><span class="tag tag-air">On air now</span></p>' : "") +
           "<h3>" + esc(s.presenter) + "</h3>" +
-          (s.show || s.repeat ? "<p>" + esc(s.show || "") + (s.repeat ? '<span class="tag tag-repeat">Repeat</span>' : "") + "</p>" : "") +
+          (s.show || s.repeat ? "<p>" + esc(s.show || "") + (s.repeat ? '<span class="tag">Repeat</span>' : "") + "</p>" : "") +
           '<p class="time">' + esc(s.time) + "</p><p>" + linkContact(s.contact) + "</p></div></article>";
       });
       html += "</section>";
@@ -288,6 +302,7 @@
       n.href = "mailto:" + cfg.email;
     });
     renderOnAir();
+    renderToday();
     renderSchedule();
     renderPosters();
     renderArchives();

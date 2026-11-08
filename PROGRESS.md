@@ -23,7 +23,7 @@ Last updated 8 November 2026. Stages 3 and 4 are done locally. `site/` is built 
 - **Stream:** the Radiojar listener address is in `site/data/config.js`. The broadcast password is not stored in this project and must never be. Full functional test passed in Chrome on 8 November 2026 with the real stream, including from an https page.
 - **Not tested yet:** real phones, especially iPhone Safari. Radiojar redirects listeners to a plain http server, which Chrome handled but Safari may treat differently, so test on an iPhone once the site is on https. The two Facebook links cannot be checked automatically.
 - **Next:** styling pass with the owner.
-- **Not committed:** `site/`, `review/`, `asset-map.csv`, `preview.ps1` and `UPDATING.md` are not in git yet.
+- **Git:** the first full build is committed locally as `603d744`. The medium wine-red restyle and `review/style-samples/` are not committed yet. Nothing has been pushed.
 - **Stage 4 results, 8 November 2026:** every internal link, image and MP3 passed at both widths in Chrome. After the owner's changes: 691 files, largest 23.3 MiB. `asset-map.csv` shows where each original went. Of 632 downloaded files, 571 are used. The other 61 are 9 old pages and site files (rebuilt), 3 builder files, 21 theme graphics, 5 larger duplicates of home page slides, and 23 files the owner chose to remove.
 - **Nothing has been published or pushed.**
 
@@ -56,7 +56,7 @@ These replace anything different in the original brief above.
 - **Removed from `site/` (originals remain in `source/`):** all 19 interviews in the Mike Murphy and Michelle Murphy sections, leaving 5; the phone-screenshot poster `paddy-ob-nov-2026-copy` (also from the collection album), leaving 8 posters; Lisa McHugh's whole Links entry.
 - **Removed features:** the chat room and the visitor counter. Neither is wanted.
 - **Radio:** autoplay replaces "no autoplay". It tries to start when the site opens, or on the first tap if the browser blocks it. The player is in the page and keeps playing between pages, replacing the pop-out window.
-- **Look:** Cork red and white, no badges or crests, sharper and more modern. One font for all text, Atkinson Hyperlegible, stored in `site/assets/fonts/`.
+- **Look (chosen from samples in `review/style-samples/`, `mix-medium`):** a station column holding the original single-disc logo, name, Listen button and menu, across the top on phones and down the side on large screens. Deep wine-red page, darker wine column, ivory Listen button, no badges or crests. One font for all text, Atkinson Hyperlegible, stored in `site/assets/fonts/`. The home page also shows the presenter on air and today's shows.
 - **Clock:** shows Irish time and the visitor's own time.
 - **Planned, not built:** an updating app for the station's editor, including choosing the home page photos. Those are listed in `site/data/home-photos.js`, ready for it.
 

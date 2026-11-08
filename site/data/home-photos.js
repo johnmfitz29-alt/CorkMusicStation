@@ -1,6 +1,8 @@
 /* The photos that rotate on the home page. Any photo from images/collection or images/gallery can be listed.
    The future updating app will edit this list. */
-window.HOME_PHOTOS=[{"src":"images/collection/bumblence-photo-2_orig.jpg","thumb":"images/collection/bumblence-photo-2_orig.jpg","w":640,"h":960},
+window.HOME_PHOTOS=[
+{"src":"images/collection/blackwater-vintage-group.jpg","thumb":"images/collection/blackwater-vintage-group-t.jpg","w":1600,"h":715},
+{"src":"images/collection/bumblence-photo-2_orig.jpg","thumb":"images/collection/bumblence-photo-2_orig.jpg","w":640,"h":960},
 {"src":"images/collection/bumblence-photo-3.jpg","thumb":"images/collection/bumblence-photo-3-t.jpg","w":1517,"h":743},
 {"src":"images/collection/bunblence-photo-1_orig.jpg","thumb":"images/collection/bunblence-photo-1_orig-t.jpg","w":1008,"h":500},
 {"src":"images/collection/mbleance-2020.jpg","thumb":"images/collection/mbleance-2020-t.jpg","w":960,"h":720},
