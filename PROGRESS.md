@@ -17,7 +17,7 @@ Last updated 8 November 2026. Stages 3 and 4 are done locally. `site/` is built 
 - `CLAUDE.md` holds the standing rules.
 - Git is set up locally, with `source/` in `.gitignore`.
 
-**Admin area, `SPEC.md` Stage 1 (8 November 2026):** code done locally and tested, not committed. See "Stage 1 results" in `SPEC.md`. Waiting on the owner for `TO-APPROVE.md` and `SETUP-CHECKLIST.md`. Node.js was installed with winget to run the tests (`npm test`).
+**Admin area, `SPEC.md` Stage 1 (8 November 2026):** code done locally and tested, committed locally, not pushed. See "Stage 1 results" in `SPEC.md`. Waiting on the owner for `TO-APPROVE.md` and `SETUP-CHECKLIST.md`. Node.js was installed with winget to run the tests (`npm test`).
 
 ## Not finished
 
@@ -25,7 +25,7 @@ Last updated 8 November 2026. Stages 3 and 4 are done locally. `site/` is built 
 - **Stream:** the Radiojar listener address is in `site/data/config.js`. The broadcast password is not stored in this project and must never be. Full functional test passed in Chrome on 8 November 2026 with the real stream, including from an https page.
 - **Not tested yet:** real phones, especially iPhone Safari. Radiojar redirects listeners to a plain http server, which Chrome handled but Safari may treat differently, so test on an iPhone once the site is on https. The two Facebook links cannot be checked automatically.
 - **Next:** styling pass with the owner.
-- **Git:** the first full build is committed locally as `603d744`. The medium wine-red restyle and `review/style-samples/` are not committed yet. Nothing has been pushed.
+- **Git:** the first full build is committed locally as `01c02fd`. The medium wine-red restyle and `review/style-samples/` are not committed yet. Nothing has been pushed.
 - **Stage 4 results, 8 November 2026:** every internal link, image and MP3 passed at both widths in Chrome. After the owner's changes: 691 files, largest 23.3 MiB. `asset-map.csv` shows where each original went. Of 632 downloaded files, 571 are used. The other 61 are 9 old pages and site files (rebuilt), 3 builder files, 21 theme graphics, 5 larger duplicates of home page slides, and 23 files the owner chose to remove.
 - **Nothing has been published or pushed.**
 
@@ -128,4 +128,4 @@ These replace anything different in the original brief above.
 - **27 home page slides** return 404 under their listed names. All were saved under `_orig` or `published/` names and noted in the manifest.
 - **The 165 home page slides have no captions**, so their events are unknown.
 - **The crawl scripts were temporary** and are not kept in this project.
-- **Git has no name or email set on this computer.** The first commit supplied them for that commit only.
+- **Git identity:** this project uses GitHub's private noreply address. All commits were rewritten to it on 8 November 2026, before the first push, so no personal email is in the history.

@@ -31,7 +31,7 @@ test("every editable data file is strict JSON", () => {
 });
 
 test("schedule conversion changed only the approved time text (R35)", () => {
-  const oldText = execFileSync("git", ["show", "72e1341:site/data/schedule.js"], { cwd: root, encoding: "utf8" });
+  const oldText = execFileSync("git", ["show", "af6fd80:site/data/schedule.js"], { cwd: root, encoding: "utf8" });
   const box = { window: {} };
   vm.runInNewContext(oldText, box);
   const before = clean(box.window.SCHEDULE);
