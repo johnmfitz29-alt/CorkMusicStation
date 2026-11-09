@@ -1,5 +1,6 @@
 /* Gig Guide posters. Newest additions can go anywhere in this list. See UPDATING.md. */
 window.POSTERS = [
+{"file":"images/posters/rui-glenn-2-copy_orig.jpg","w":1080,"h":1398,"lastDate":"2026-12-31"},
 {"file":"images/posters/social-dancing-1-copy_orig.jpg","w":1080,"h":1643,"lastDate":"2026-12-05"},
 {"file":"images/posters/rui-glenn-2026-copy_orig.jpg","w":1080,"h":1400,"lastDate":"2026-10-26"},
 {"file":"images/posters/michal-commins-nov-1-copy_orig.jpg","w":1080,"h":1065,"lastDate":"2026-11-03"},
