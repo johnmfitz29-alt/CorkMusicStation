@@ -42,6 +42,25 @@ function walk(dir, out = []) {
   return out;
 }
 
+// Cloudflare downloads only the newest commit. With no parent to compare with, git would report every
+// file as changed, so the parent is fetched first. Without it, the check is skipped rather than guessed.
+export function lastCommitLog(root) {
+  const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+  const hasParent = () => {
+    try { git("rev-parse", "--verify", "HEAD^"); return true; } catch { return false; }
+  };
+  try {
+    if (!hasParent()) {
+      if (git("rev-parse", "--is-shallow-repository").trim() !== "true") return "";
+      git("fetch", "--quiet", "--depth=2", "origin", git("rev-parse", "HEAD").trim());
+      if (!hasParent()) return null;
+    }
+    return git("-c", "core.quotepath=off", "show", "--name-status", "--format=%B", "HEAD");
+  } catch {
+    return null;
+  }
+}
+
 export function checkSite(root, { overrides = {}, gitLog } = {}) {
   const failures = [];
   const warnings = [];
@@ -192,12 +211,8 @@ export function checkSite(root, { overrides = {}, gitLog } = {}) {
   // A commit from the admin area may touch only the allowed paths.
   let log = gitLog;
   if (log === undefined) {
-    try {
-      log = execFileSync("git", ["show", "--name-status", "--format=%B", "HEAD"], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
-    } catch {
-      log = null;
-      warnings.push("git history not available, so the last commit's paths were not checked");
-    }
+    log = lastCommitLog(root);
+    if (log === null) warnings.push("the previous commit could not be fetched, so the last commit's paths were not checked (the admin functions enforce them too)");
   }
   if (log && ADMIN_TRAILER.test(log)) {
     const actions = { A: "create", M: "update", D: "delete" };
