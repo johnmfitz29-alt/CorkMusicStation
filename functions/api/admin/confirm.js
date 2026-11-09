@@ -12,7 +12,8 @@ export async function onRequestGet(context) {
   const id = url.searchParams.get("id");
   if (!validChangeId(id)) return reply(400, { ok: false, code: "bad_request" });
   try {
-    const response = await env.ASSETS.fetch(new URL("/data/last-change.json", url.origin), { cache: "no-store" });
+    // Cloudflare's runtime rejects a "cache" option here unless newer settings are switched on, so none is passed.
+    const response = await env.ASSETS.fetch(new URL("/data/last-change.json", url.origin));
     if (!response.ok) return reply(200, { ok: true, live: false });
     const current = await response.json();
     return reply(200, { ok: true, live: current.id === id });

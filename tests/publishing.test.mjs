@@ -444,7 +444,7 @@ test("Get Help and failure reports reach the owner (R5, R54)", async () => {
 test("'on the website' is true only when the live file shows that change (R53)", async () => {
   const c = newId();
   const ask = async (live) => {
-    env.ASSETS = { fetch: async () => live };
+    env.ASSETS = { fetch: async (...args) => { assert.equal(args.length, 1, "Cloudflare rejects options such as cache here"); return live; } };
     const r = await confirm({ env, request: new Request(`https://x.test/api/admin/confirm?id=${c}`, { headers: headers() }) });
     return (await r.json()).live;
   };
