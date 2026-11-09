@@ -58,5 +58,78 @@
   };
 })();
 </script>
+<h2>Full rehearsal (practice copy only)</h2>
+<p>Sends made-up photos, adds them to a test album in one change, waits until the practice site shows it, then undoes it and waits again. Each change uses one Cloudflare build.</p>
+<label>Photos: <select id="count"><option>1</option><option selected>12</option><option>60</option></select></label>
+<button id="rehearse" type="button">Run rehearsal</button>
+<pre id="log" role="status">Waiting.</pre>
+<script>
+(function () {
+  var log = document.getElementById("log"), button = document.getElementById("rehearse");
+  function say(t) { log.textContent += "\n" + t; }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function newId() {
+    var a = new Uint8Array(12); crypto.getRandomValues(a);
+    return "test-" + Array.prototype.map.call(a, function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+  }
+  function picture(w, h) {
+    var c = document.createElement("canvas"); c.width = w; c.height = h;
+    var x = c.getContext("2d");
+    for (var i = 0; i < 300; i++) {
+      x.fillStyle = "rgb(" + (Math.random() * 256 | 0) + "," + (Math.random() * 256 | 0) + "," + (Math.random() * 256 | 0) + ")";
+      x.fillRect(Math.random() * w, Math.random() * h, w / 12, h / 12);
+    }
+    return c.toDataURL("image/jpeg", 0.8).split(",")[1];
+  }
+  async function send(kind, change, w, h) {
+    var r = await fetch("/api/admin/upload?kind=" + kind + "&change=" + change, { method: "POST", headers: { "content-type": "text/plain" }, body: picture(w, h) });
+    var j = await r.json();
+    if (!j.ok) throw new Error("Upload stopped: " + j.code);
+    await wait(900);
+    return j.receipt;
+  }
+  async function untilLive(id) {
+    var began = Date.now();
+    while (Date.now() - began < 600000) {
+      var r = await (await fetch("/api/admin/confirm?id=" + id)).json();
+      if (r.live) return Math.round((Date.now() - began) / 1000);
+      await wait(8000);
+    }
+    return null;
+  }
+  async function change(url, body) {
+    var t = performance.now();
+    var r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    var j = await r.json();
+    say(url.split("/").pop() + ": HTTP " + r.status + ", " + Math.round(performance.now() - t) + " ms, " + JSON.stringify(j));
+    return j;
+  }
+  button.onclick = async function () {
+    button.disabled = true;
+    log.textContent = "Starting.";
+    try {
+      var who = await (await fetch("/api/admin/changes")).json();
+      if (!who.ok || who.practice !== true) throw new Error("This only runs on the practice copy: " + JSON.stringify(who));
+      var n = +document.getElementById("count").value, id = newId(), photos = [], began = Date.now();
+      for (var i = 0; i < n; i++) {
+        photos.push({ image: await send("photo", id, 1600, 1200), thumb: await send("thumb", id, 400, 300) });
+        say("Sent " + (i + 1) + " of " + n + " (" + Math.round((Date.now() - began) / 1000) + " s)");
+      }
+      var done = await change("/api/admin/publish", { changeId: id, ops: [{ op: "addPhotos", newAlbum: "Rehearsal " + id.slice(-6), photos: photos }] });
+      if (!done.ok) throw new Error("Stopped at publish");
+      say("Waiting for the practice site...");
+      var live = await untilLive(id);
+      say(live === null ? "NOT live after 10 minutes" : "Live after " + live + " s");
+      var undoId = newId();
+      var undone = await change("/api/admin/undo", { changeId: undoId, target: id });
+      if (!undone.ok) throw new Error("Stopped at undo");
+      live = await untilLive(undoId);
+      say(live === null ? "Undo NOT live after 10 minutes" : "Undo live after " + live + " s");
+      say("Finished.");
+    } catch (e) { say("STOPPED: " + e.message); }
+    button.disabled = false;
+  };
+})();
+</script>
 </body>
 </html>

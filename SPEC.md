@@ -237,3 +237,36 @@ Local tests: run `npm test`. Build check: run `npm run check`.
 **Noticed:** the build check warns about 8 undated posters until `TO-APPROVE.md` is answered, and about 3 MP3s of 21 to 23 MiB, which are under the 25 MiB limit.
 
 **Autoplay recheck (8 November 2026):** a Stage 1 fault was found and fixed. The date logic was on only three pages, so moving from Archives, Links, Gallery or the 404 page to the schedule, home or Gig Guide page forced a full reload, which restarts the radio. All 7 pages now load it, and a test guards this. In the browser, the stream started by itself on Archives and kept playing, with no reload, through DJ Schedule, Home and Gig Guide. Stop worked and saved its setting. Not tested: staying stopped after a full page reload (the browser pane stopped responding at that step), a browser that blocks autoplay, where "Tap anywhere to start the music" appears (that code is unchanged since the last commit), and iPhone Safari.
+
+## 10. Decisions during setup (8 November 2026)
+
+- **`.html` addresses:** Cloudflare Pages redirects `/dj-schedule.html` to `/dj-schedule`. The owner accepted this: every old address still works.
+- **Admin page:** served only through a function that checks the login first, with no plain admin file on the site. Added after `/admin%2Fupload-test` was found to get past Cloudflare Access to a static page.
+- **R80** `/admin%2F` style encoded addresses never show an admin page without a login (run against the deployed site).
+- **Order:** Stage 2 starts with Resend and the R64 measurement still open. R64 stays unproven, and `UPLOAD_TEST_ENABLED` stays set on Preview until the figures are in. So far 74 of 74 test pictures reached GitHub with no problems, at about 6.5 seconds each.
+
+## 11. Stage 2 results (8 November 2026)
+
+Tested on this computer against a stand-in GitHub (`tests/fake-github.mjs`). 76 automated tests pass. Nothing here has run on GitHub or Cloudflare yet.
+
+| Test | Result |
+|---|---|
+| R3, R13, R14, R26 undo and undo of undo | Pass locally, compared with the earlier data |
+| R24, R25 reach of 20 and unsafe entries | Pass locally |
+| R49 one commit, R48 nothing before the final step | Pass locally, including 60 photos |
+| R50 server repeats the checks | Pass locally: forged, altered, borrowed and wrong-kind receipts, undo-only steps |
+| R53 confirmation from the live file | Pass locally with a stand-in file |
+| R54 failure leaves everything unchanged | Pass locally |
+| R55 double clicks, R72 owner pushing at the same moment | Pass locally |
+| R62 one email per change | Pass locally. Resend is not set up, so no real email has been sent |
+| R63 file-limit warning | Written. Not tested at 18,000 files |
+| R31 clashes, R29 steps, R33 Late, R34 new presenter, R27 home photos | Server rules pass locally. Screens come in Stage 3 |
+| R64 free limits | **Open, with a risk.** See below |
+
+**R64 risk:** CPU per publish on this computer is about 5 ms for 1 photo, 7 ms for 12 and 18 ms for 60, against Cloudflare's free limit of 10 ms per request. Cloudflare's processors differ, so this is an indication only. It must be measured on the practice copy. If real figures are over the limit, receipts will be checked in smaller groups before the final step, which changes nothing he sees, or the go-size will be reduced.
+
+**Bug caught by the tests:** rewriting `schedule.js` was cut at a mention of its name in the opening comment, which would have broken the file. It is fixed, and every rewritten file must now read back identically before it can be saved.
+
+**Wording chosen:** noon on the public page reads "12.00 midday", matching "12.00 midnight". Section 5 had no example, so the owner may want to confirm it.
+
+**Minimum photo size:** a new gallery photo must be at least 600 pixels on its long side. The spec named a limit only for posters.

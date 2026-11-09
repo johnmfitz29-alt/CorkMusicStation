@@ -9,7 +9,8 @@ export function parseDataFile(text, name) {
 
 // Replaces the value and keeps any leading comment.
 export function replaceDataFile(text, name, body) {
-  const at = text.indexOf(`window.${name}`);
-  if (at < 0) throw new Error(`Expected window.${name} in data file`);
-  return `${text.slice(0, at)}window.${name} = ${body};\n`;
+  // The comment at the top may mention the name, so skip past it first.
+  const lead = text.match(/^\s*(?:\/\*[\s\S]*?\*\/\s*)*/)[0];
+  if (!text.startsWith(`window.${name}`, lead.length)) throw new Error(`Expected window.${name} in data file`);
+  return `${lead}window.${name} = ${body};\n`;
 }

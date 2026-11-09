@@ -64,6 +64,8 @@ These replace anything different in the original brief above.
 
 ## Owner's approvals for the admin area (8 November 2026)
 
+- Cloudflare's shortening of .html addresses is accepted. The old addresses redirect and still work.
+
 - All 8 posters now have last dates. Four had already passed, so they are hidden: sligo-1-copy, john-joes-dances-2026, rui-glenn-2026-copy_orig, michal-commins-nov-1-copy_orig. The picture files remain.
 - `site/data/names.js` holds the approved names list and 16 misspelling pairs.
 - Schedule presenter names changed: Breeda becomes Breeda Piggott, Willie becomes Willie Fitzgerald.
