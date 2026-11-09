@@ -1,5 +1,4 @@
 window.GALLERY = [
-{"title":"Rehearsal 5d0e97","photos":[{"src":"images/gallery/b50836fe428042da.jpg","thumb":"images/gallery/ccc9b6b60b1bbf4e-t.jpg","w":1600,"h":1200}]},
 {"title":"Rehearsal 1b9509","photos":[{"src":"images/gallery/4a53a8db278a3bf4.jpg","thumb":"images/gallery/e637d977060ea07a-t.jpg","w":1600,"h":1200}]},
 {"title":"Rehearsal f05e5d","photos":[{"src":"images/gallery/d60fc94bbc4c804e.jpg","thumb":"images/gallery/e983b14d13ada0d5-t.jpg","w":1600,"h":1200}]},
 {"title":"Cork Music Station & Millstreet Vintage Fundraiser For Bumbleance 2022.","photos":[{"src":"images/gallery/bumblence-photo-2.jpg","thumb":"images/gallery/bumblence-photo-2-t.jpg","w":892,"h":1338},{"src":"images/gallery/bunblence-photo-1_orig.jpg","thumb":"images/gallery/bunblence-photo-1_orig-t.jpg","w":1008,"h":500},{"src":"images/gallery/bumblence-photo-3_orig.jpg","thumb":"images/gallery/bumblence-photo-3_orig-t.jpg","w":1517,"h":743},{"src":"images/gallery/bumblence-photo-4_orig.jpg","thumb":"images/gallery/bumblence-photo-4_orig-t.jpg","w":1080,"h":720}]},
