@@ -60,7 +60,7 @@ async function verifyReceipts(env, ops) {
 }
 
 // makeOps(log) returns the steps. It runs afresh on each attempt, so it always sees the newest history.
-export async function runChange({ env, changeId, makeOps, summaryFor, who, allowDuplicate, origin }) {
+export async function runChange({ env, changeId, makeOps, summaryFor, who, allowDuplicate, origin, typedNames = [] }) {
   const branch = publishBranch(env);
   if (!branch || !env.GITHUB_REPO || !env.GITHUB_TOKEN || !env.RECEIPT_KEY) return reply(500, { ok: false, code: "not_configured" });
   if (!validChangeId(changeId)) return reply(400, { ok: false, code: "bad_request" });
@@ -124,7 +124,8 @@ export async function runChange({ env, changeId, makeOps, summaryFor, who, allow
       }
 
       const warnings = tree.size >= FILE_WARN ? `\n\nWarning: the project has ${tree.size} files, nearing the host's limit of 20,000.` : "";
-      const named = newNames.length ? `\n\nNew names to check: ${newNames.join(", ")}` : "";
+      const allNames = [...newNames, ...typedNames];
+      const named = allNames.length ? `\n\nNew names to check: ${allNames.join(", ")}` : "";
       await emailOwner(env, `Website changed: ${summary}`, `${who} ${summary}.${named}${warnings}\n\nCheck it or undo it: ${origin}/admin/\n`);
       return reply(200, { ok: true, changeId, summary });
     }
