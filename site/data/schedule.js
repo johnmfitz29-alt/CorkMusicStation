@@ -9,7 +9,8 @@ window.SCHEDULE = {
 "weekly": [
 { "day": "Monday", "shows": [
   {"id":"mon-tim-coughlan-1900","presenter":"Tim Coughlan","time":"7.00 pm - 9.00 pm","start":"19:00","end":"21:00","contact":"For Requests Email {email}","photo":"images/presenters/tim-coughlan-photo-1.jpg"},
-  {"id":"mon-george-f-langan-2230","presenter":"George F Langan","show":"George's Late Show","time":"10.30 pm - Late","start":"22:30","end":"24:00","contact":"Email George {email}","photo":"images/presenters/george-profile_orig.jpg","late":true}
+  {"id":"mon-george-f-langan-2230","presenter":"George F Langan","show":"George's Late Show","time":"10.30 pm - Late","start":"22:30","end":"24:00","contact":"Email George {email}","photo":"images/presenters/george-profile_orig.jpg","late":true},
+  {"id":"mon-ita-2400","presenter":"Ita","time":"12.00 midnight - 4.15 am","start":"24:00","end":"28:15","repeat":true,"contact":"For Requests Email {email}","photo":"images/presenters/caf31196b49b926f.jpg"}
 ]},
 { "day": "Tuesday", "shows": [
   {"id":"tue-jimmy-reidy-2000","presenter":"Jimmy Reidy","show":"Jimmy Reidy & Friends","time":"8.00 pm - 9.00 pm","start":"20:00","end":"21:00","contact":"Email Jimmy {email}","photo":"images/presenters/jimmy-reidy.jpg"},
@@ -42,5 +43,7 @@ window.SCHEDULE = {
   {"id":"sun-jimmy-reidy-2200","presenter":"Jimmy Reidy","show":"Jimmy Reidy & Friends","repeat":true,"time":"10.00 pm - 11.15 pm","start":"22:00","end":"23:15","contact":"Email Jimmy {email}","photo":"images/presenters/jimmy-reidy-2.jpg"}
 ]}
 ],
-"oneOffs": []
+"oneOffs": [
+
+]
 };
