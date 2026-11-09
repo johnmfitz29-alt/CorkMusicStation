@@ -221,6 +221,12 @@
         return '<button type="button" data-a="' + ai + '" data-i="' + i + '"><img src="' + esc(p.thumb) + '" alt="Photo from ' + esc(a.title) + ", " + (i + 1) + " of " + a.photos.length + '" loading="lazy" width="' + p.w + '" height="' + p.h + '"></button>';
       }).join("");
     }
+    /* The chosen cover goes first. */
+    window.GALLERY.forEach(function (a) {
+      if (!a.cover) return;
+      var at = a.photos.findIndex(function (p) { return p.src === a.cover; });
+      if (at > 0) a.photos.unshift(a.photos.splice(at, 1)[0]);
+    });
     box.innerHTML = window.GALLERY.map(function (a, i) {
       return '<details class="album"' + (i === 0 ? " open" : "") + "><summary>" + titleHtml(a.title) + "<small>" + a.photos.length + " photos</small></summary><div class=\"grid\"></div></details>";
     }).join("");

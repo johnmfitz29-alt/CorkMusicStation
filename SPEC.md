@@ -270,3 +270,41 @@ Tested on this computer against a stand-in GitHub (`tests/fake-github.mjs`). 76 
 **Wording chosen:** noon on the public page reads "12.00 midday", matching "12.00 midnight". Section 5 had no example, so the owner may want to confirm it.
 
 **Minimum photo size:** a new gallery photo must be at least 600 pixels on its long side. The spec named a limit only for posters.
+
+## 12. Stage 2 on the real practice copy (9 November 2026)
+
+Real login, GitHub and Cloudflare, using the owner-only rehearsal, with made-up photos of about 100 KB.
+
+| Photos | Sending | Publish | Live after | Undo | Undo live after |
+|---|---|---|---|---|---|
+| 1 | 3 s | HTTP 200, 3.2 s | 35 s | HTTP 200, 3.7 s | 26 s |
+| 12 | 38 s | HTTP 200, 3.3 s | 33 s | HTTP 200, 4.0 s | 33 s |
+| 60 | 197 s | HTTP 200, 5.2 s | 33 s | HTTP 200, 3.6 s | 41 s |
+
+R3, R49, R53, R64 and R78 have now passed once on the real system for this path. R64 is not closed until the CPU figures from Cloudflare's Metrics are recorded: one successful run does not show the margin.
+
+Two faults appeared only on Cloudflare and are fixed: the build check treated every file as changed on a partial download, and a `cache` option was passed that Cloudflare may reject.
+
+## 13. Stage 3 progress (9 November 2026)
+
+**Slice 1, done on this computer:** the measuring page and its function are removed. The admin page is packed from `admin-src/` by `tools/build-admin.mjs` and served only through a login-checked function, so no plain admin file exists (R80, still to run on the deployed site). Home screen with five buttons, Undo, Get Help, the shared read-back and ending, the Practice banner, and the second-window guard work against a temporary local server with invented data (R4, R24, R25, R28, R54, R56 in part, R65, R66, R68, R69, R73 in part).
+
+**Still to build:** Add Gig Poster, Add Photos, Change Schedule, Home Page Photos, names checks, photo processing and saved drafts. Those four buttons currently say "This part isn't ready yet."
+
+`UPLOAD_TEST_ENABLED` is no longer used and can be deleted from Preview.
+
+**Slice 2, done on this computer (9 November 2026):** Add Gig Poster and take-down, tested in a browser with the real functions against the stand-in GitHub. Passed: too-small picture, a file that isn't a picture, an awkward file name, rotation, empty and past dates, last date and no end date, a resized and re-saved copy of a real poster (R10, then "They're different, keep it"), a 2-page PDF asking which page, three clicks making one commit (R55), and closing the window then "Carry on?" (R44). Not tested: a real HEIC photo, a password-protected PDF, or any of this on Cloudflare.
+
+**Duplicate check:** a 9 x 8 fingerprint could not separate copies from different posters. Replaced by a 16 x 16 brightness grid. Measured on the 8 real posters: copies differ by at most 5.4, different posters by at least 33, and the threshold is 12.
+
+PDF and HEIC libraries are in `site/assets/vendor/`, unmodified, with their licences.
+
+**Slice 3, done on this computer (9 November 2026):** name checks and Add Photos, tested in a browser with the real functions against the stand-in GitHub. Passed: script text refused, "paddy o brien" and "Hazel Tree Malow" offering the right name, "THE   MILL BAR." tidied and confirmed as new, title format, a mixed batch (too small, unreadable, a repeat in the same go, a photo already in the gallery), remove, cover, closing the window then "Carry on?", two clicks making one commit.
+
+**Known gaps for the next slice:** the public gallery does not yet show the chosen cover first (R18). There is no screen yet for taking down photos or albums (R13, R14), though the server side passes. 60 photos at once, a real HEIC photo and Cloudflare are untested through these screens. Checking against the existing gallery took about 15 seconds locally and will take longer on a slow connection.
+
+Owner confirmed already-hidden posters stay in the take-down list, marked as hidden.
+
+**Slice 4, done on this computer (9 November 2026), completing the Stage 3 screens:** the public gallery shows the chosen cover first (R18), and these were tested in a browser with the real functions against the stand-in GitHub: taking down photos and whole events with the photo count (R14), the home-page guard, Change Schedule with every-week and one-date changes, a wrong-weekday date, the clash message and nearest free time (R31), adding a show for a known and a brand-new presenter with a photo (R34), past-midnight wording (R30), Home Page Photos with its minimum of 3 (R27), and closing the window at the read-back (R44).
+
+**Stage 3 is not signed off.** None of these screens has run on Cloudflare. Not tested: a real HEIC photo, a password-protected PDF, 60 real photos through these screens, signing in again after the login expires (R79), a second window (R56), and the "Late" option through the screen. A window closed before the read-back of a schedule or home-photo change loses those few taps. Time lists have up to 96 entries, which needs watching when he tries it (R74).

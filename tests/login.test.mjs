@@ -112,7 +112,7 @@ function handlers(dir) {
 }
 
 test("every handler checks the login first (R59)", () => {
-  const files = handlers(path.join(root, "functions/api"));
+  const files = [...handlers(path.join(root, "functions/api")), ...handlers(path.join(root, "functions/admin"))];
   assert.ok(files.length > 0);
   for (const file of files) {
     const text = fs.readFileSync(file, "utf8");

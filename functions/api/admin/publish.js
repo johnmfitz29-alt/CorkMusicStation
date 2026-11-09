@@ -31,6 +31,7 @@ export async function onRequestPost(context) {
     makeOps: () => ops,
     who: login.email,
     allowDuplicate: allowDuplicate === true,
+    typedNames: Array.isArray(body.newNames) ? body.newNames.filter((n) => typeof n === "string").slice(0, 5).map((n) => n.slice(0, 120)) : [],
     origin: new URL(request.url).origin,
   });
 }
