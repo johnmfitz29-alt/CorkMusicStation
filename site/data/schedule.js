@@ -43,6 +43,6 @@ window.SCHEDULE = {
 ]}
 ],
 "oneOffs": [
-
+{"id":"o-chg-1d19-1","date":"2027-06-21","type":"off","showId":"mon-george-f-langan-2230"}
 ]
 };
