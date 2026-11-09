@@ -1,5 +1,6 @@
 /* The record behind Undo. Written only by the admin area. */
 window.CHANGE_LOG = [
+{"id":"chg-982c21308a50169e1c48bdcd","at":"2026-11-09T21:19:26.256Z","summary":"added a gig poster","touched":["poster:images/posters/ba9f120938aa5665.jpg"],"undo":[{"op":"removePoster","file":"images/posters/ba9f120938aa5665.jpg"}]},
 {"id":"chg-a6be351a43f040c606ab66cc","at":"2026-11-09T21:17:01.507Z","summary":"undid: took down a gig poster","touched":["poster:images/posters/rui-glenn-2-copy_orig.jpg"],"undo":[{"op":"removePoster","file":"images/posters/rui-glenn-2-copy_orig.jpg"}]},
 {"id":"chg-ea09755b3673ed2f28145f9b","at":"2026-11-09T21:16:06.799Z","summary":"took down a gig poster","touched":["poster:images/posters/rui-glenn-2-copy_orig.jpg"],"undo":[{"op":"_posterRestore","record":{"file":"images/posters/rui-glenn-2-copy_orig.jpg","w":1080,"h":1398,"lastDate":"2026-12-31"},"index":0,"shas":{"images/posters/rui-glenn-2-copy_orig.jpg":"d8733315a6fb7ea7ea98392398c7add5fc553e02"}}]},
 {"id":"chg-b45faab7b5ecb2cbc227c13f","at":"2026-11-09T21:13:29.463Z","summary":"took down a gig poster","touched":["poster:images/posters/sligo-1-copy.jpg"],"undo":[{"op":"_posterRestore","record":{"file":"images/posters/sligo-1-copy.jpg","w":884,"h":1249,"lastDate":"2026-09-13"},"index":0,"shas":{"images/posters/sligo-1-copy.jpg":"828cac6cac9836e76385e07aea87c5f125ca663a"}}]},
