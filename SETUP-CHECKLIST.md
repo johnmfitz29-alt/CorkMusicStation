@@ -66,3 +66,14 @@ Those results are acceptance test R58.
 
 - [ ] Create a free Resend account and verify the domain you'll send from.
 - [ ] Create an API key that can only send. Add it as `RESEND_API_KEY`, a **secret**, in step C's screen. Add `OWNER_EMAIL` the same way.
+
+## G. Settings for publishing (Stage 2)
+
+Add these in Settings → Variables and Secrets, then redeploy.
+
+| Name | Type | Production | Preview |
+|---|---|---|---|
+| `PUBLISH_BRANCH` | Text | `main` | `practice` |
+| `RECEIPT_KEY` | Secret | A long random value | A different long random value |
+
+With Resend (section F), also add `ALERT_FROM`, the address alerts are sent from, as Text.
