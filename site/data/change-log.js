@@ -1,5 +1,6 @@
 /* The record behind Undo. Written only by the admin area. */
 window.CHANGE_LOG = [
+{"id":"test-be825ae47a90ab28f7777ec9","at":"2026-11-09T00:34:25.621Z","summary":"added 12 photos to Rehearsal 777ec9","touched":["album:Rehearsal 777ec9"],"undo":[{"op":"removeAlbum","album":"Rehearsal 777ec9"}]},
 {"id":"test-393cc21e6e3f6ea203ada943","at":"2026-11-09T00:32:22.369Z","summary":"undid: added 1 photo to Rehearsal 5d0e97","touched":["album:Rehearsal 5d0e97"],"undo":[{"op":"_albumRestore","record":{"title":"Rehearsal 5d0e97","photos":[{"src":"images/gallery/b50836fe428042da.jpg","thumb":"images/gallery/ccc9b6b60b1bbf4e-t.jpg","w":1600,"h":1200}]},"index":0,"shas":{"images/gallery/b50836fe428042da.jpg":"b50836fe428042dafdc0f292f12ee6a67fe0e760","images/gallery/ccc9b6b60b1bbf4e-t.jpg":"ccc9b6b60b1bbf4ef070805ce8229ba81903d752"}}]},
 {"id":"test-4e68fb684d6cf62c0d5d0e97","at":"2026-11-09T00:31:43.742Z","summary":"added 1 photo to Rehearsal 5d0e97","touched":["album:Rehearsal 5d0e97"],"undo":[{"op":"removeAlbum","album":"Rehearsal 5d0e97"}]},
 {"id":"test-fa12add72a4791a5eb1b9509","at":"2026-11-09T00:27:57.152Z","summary":"added 1 photo to Rehearsal 1b9509","touched":["album:Rehearsal 1b9509"],"undo":[{"op":"removeAlbum","album":"Rehearsal 1b9509"}]},
