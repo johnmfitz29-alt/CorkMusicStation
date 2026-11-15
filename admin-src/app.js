@@ -206,7 +206,8 @@
     hintSpotify: "For example: open.spotify.com/artist/…",
     saidLinkNew: "New link for ",
     saidLinkChange: "Change the link for ",
-    saidLinkWith: ", with: "
+    saidLinkWith: ", with: ",
+    carryLink: "You were working on a link. Carry on?"
   }/*WORDS-END*/;
 
   var main = document.getElementById("main");
@@ -1490,6 +1491,18 @@
   function shortAddress(url) { return url.slice(8).split("/").filter(Boolean).join("/"); }
   function linkSnapshot() { return JSON.stringify({ name: link.name, pages: link.pages }); }
 
+  /* Kept after every step, picture included, so a closed window loses nothing. */
+  function saveLink() {
+    var mine = link;
+    var keep = { id: mine.id, name: mine.name, image: mine.image, pages: mine.pages, isNew: mine.isNew, orig: mine.orig, changeId: mine.changeId };
+    if (!mine.canvas) return drafts.set({ task: "link", link: keep });
+    return new Promise(function (ok) { mine.canvas.toBlob(ok, "image/jpeg", 0.92); }).then(function (blob) {
+      if (link !== mine) return undefined; /* He has finished or left since, so there is nothing to keep. */
+      keep.blob = blob;
+      return drafts.set({ task: "link", link: keep });
+    });
+  }
+
   function linksScreen() {
     current = WORDS.links;
     link = null;
@@ -1511,7 +1524,7 @@
         button(WORDS.linkChange, row, function () {
           var pages = {};
           l.pages.forEach(function (p) { pages[p.type] = p.url; });
-          link = { id: l.id, name: l.name, image: l.image, pages: pages, canvas: null, isNew: false };
+          link = { id: l.id, name: l.name, image: l.image, pages: pages, canvas: null, isNew: false, changeId: newId() };
           link.orig = linkSnapshot();
           linkPages();
         }, "plain");
@@ -1540,8 +1553,8 @@
     }, back);
   }
   function linkAdd() {
-    link = { name: "", pages: {}, canvas: null, isNew: true, orig: "" };
-    linkAskName(function () { linkPicture(linkPages, linkAdd); }, linksScreen);
+    link = { name: "", pages: {}, canvas: null, isNew: true, orig: "", changeId: newId() };
+    linkAskName(function () { saveLink(); linkPicture(linkPages, linkAdd); }, linksScreen);
   }
 
   function linkPicture(next, back) {
@@ -1572,6 +1585,7 @@
 
   function linkPages() {
     current = WORDS.links;
+    saveLink();
     screen(link.name);
     if (link.canvas) shown(link.canvas, main, link.name);
     else make("img", { src: "/" + link.image, alt: link.name, className: "picture small" }, main);
@@ -1634,6 +1648,8 @@
       if (ready.receipt) op.image = ready.receipt;
       return { changeId: id, ops: [op] };
     }, linkPages, {
+      id: chosen.changeId,
+      done: function () { link = null; drafts.clear(); },
       preview: function (at) {
         if (picture) shown(picture, at, chosen.name);
         else make("img", { src: "/" + chosen.image, alt: chosen.name, className: "picture" }, at);
@@ -1642,6 +1658,39 @@
         return call("upload?kind=link&change=" + id, { method: "POST", headers: { "content-type": "text/plain" }, body: jpegText(picture, 800) });
       } : null
     });
+  }
+
+  function resumeLink(d) {
+    current = "resume";
+    screen();
+    make("p", { textContent: WORDS.carryLink, className: "readback" }, main);
+    if (d.link.name) make("p", { textContent: d.link.name, className: "note" }, main);
+    var box = make("div", { className: "stack" }, main);
+    button(WORDS.carryYes, box, function () {
+      Promise.all([readData("links.js", "LINKS"), loadNames()]).then(function (all) {
+        if (all[0].signIn || all[1].signIn) return showSignIn();
+        if (!all[0].ok || !all[1].ok) return showRetry(WORDS.tryLater, function () { resumeLink(d); }, home);
+        linkList = all[0].value;
+        var saved = d.link;
+        /* If the entry he was changing has gone since, there is nothing to carry on with. */
+        if (!saved.isNew && !linkList.some(function (l) { return l.id === saved.id; })) { drafts.clear(); return linksScreen(); }
+        link = { id: saved.id, name: saved.name, image: saved.image, pages: saved.pages || {}, isNew: saved.isNew, orig: saved.orig, changeId: saved.changeId, canvas: null };
+        function carryOn() {
+          if (!link.name) return linkAdd();
+          if (link.isNew && !link.canvas) return linkPicture(linkPages, linksScreen);
+          linkPages();
+        }
+        if (!saved.blob) return carryOn();
+        createImageBitmap(saved.blob).then(function (b) {
+          var c = canvasOf(b.width, b.height);
+          c.getContext("2d").drawImage(b, 0, 0);
+          c.originalLong = Math.max(b.width, b.height);
+          link.canvas = c;
+          carryOn();
+        }, carryOn);
+      });
+    });
+    button(WORDS.carryNo, box, function () { drafts.clear(); home(); }, "plain");
   }
 
   function resumePhotos(d) {
@@ -1724,6 +1773,7 @@
       if (d && d.task === "poster") resumeDraft(d);
       if (d && d.task === "photos") resumePhotos(d);
       if (d && d.task === "pending") resumePending(d);
+      if (d && d.task === "link") resumeLink(d);
     });
   }
   start();

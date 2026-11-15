@@ -408,6 +408,7 @@ The owner asked for the Links page to take social media pages, chosen when a lin
 - **He can** add an entry, change its name, picture or pages, remove a page, and take an entry down. Every change has the usual read-back, Undo and alert email. New names are sent to the owner.
 - **Addresses** must be `https`, with no sign-in details or port. Each social kind accepts only that service's own addresses. He can type or paste without the `https://`. The server and the build check apply the same rules.
 - **The two existing entries** moved unchanged from the page into `site/data/links.js`.
-- **Limits:** 60 entries. No saved draft for this task, so a closed window means starting it again.
+- **Limits:** 60 entries.
+- **Saved as he goes:** the name, picture and pages are kept after every step, so a closed window brings back "You were working on a link. Carry on?" for a new link or a change. Tested in a browser for both.
 
 Tested: 9 new automated tests, including 26 unsafe or wrong addresses, and the full flow in a browser against the stand-in GitHub (add with a picture, a repeated name, wrong-service and `javascript:` addresses, change, remove a page, Undo, and the public page at phone width). Not yet run on Cloudflare.
