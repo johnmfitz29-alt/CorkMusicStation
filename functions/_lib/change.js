@@ -24,6 +24,7 @@ const FILES = {
   gallery: ["site/data/gallery.js", "GALLERY"],
   home: ["site/data/home-photos.js", "HOME_PHOTOS"],
   schedule: ["site/data/schedule.js", "SCHEDULE"],
+  links: ["site/data/links.js", "LINKS"],
 };
 const LOG_PATH = "site/data/change-log.js";
 const VERSION_PATH = "site/data/last-change.json";
@@ -33,6 +34,7 @@ const SERIAL = {
   posters: lines,
   gallery: lines,
   home: lines,
+  links: lines,
   schedule: (s) => `{\n"weekly": [\n${s.weekly.map((d) => `{ "day": ${JSON.stringify(d.day)}, "shows": [\n${d.shows.map((x) => `  ${JSON.stringify(x)}`).join(",\n")}\n]}`).join(",\n")}\n],\n"oneOffs": ${lines(s.oneOffs)}\n}`,
 };
 

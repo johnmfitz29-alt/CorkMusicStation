@@ -2,6 +2,7 @@
 // Each step also records the steps that reverse it, which is how Undo works.
 // Steps whose names start with "_" exist only for Undo and are refused from the browser.
 
+import { LINK_TYPES, cleanPageUrl } from "./links.js";
 import { DAYS, dateClash, hhmm, irishToday, mins, realDate, timeText, validTimes, weekdayOf, weeklyClash } from "./schedule.js";
 
 const MAX_PHOTOS = 60;
@@ -26,6 +27,7 @@ const NEEDS = {
   addPhotos: ["gallery", "home"], removePhotos: ["gallery", "home"], removeAlbum: ["gallery", "home"],
   _photoRestore: ["gallery", "home"], _albumRestore: ["gallery", "home"],
   setHomePhotos: ["home", "gallery"], _homeRestore: ["home", "gallery"],
+  addLink: ["links"], editLink: ["links"], removeLink: ["links"], _linkSet: ["links"], _linkRestore: ["links"],
 };
 const SCHEDULE_OPS = ["weeklyMove", "weeklyOff", "weeklyAdd", "oneOffOff", "oneOffMove", "oneOffAdd", "_showSet", "_showRestore", "_showRemove", "_oneOffRemove", "_oneOffRestore"];
 for (const name of SCHEDULE_OPS) NEEDS[name] = ["schedule"];
@@ -86,8 +88,9 @@ export function applyOps(state, ops, ctx) {
   }
 
   function usedElsewhere(file) {
-    const { posters, gallery, home, schedule } = state;
+    const { posters, gallery, home, schedule, links } = state;
     if (posters?.some((p) => p.file === file)) return true;
+    if (links?.some((l) => l.image === file)) return true;
     if (gallery?.some((a) => a.photos.some((p) => p.src === file || p.thumb === file))) return true;
     if (home?.some((p) => p.src === file || p.thumb === file)) return true;
     return !!schedule && [...schedule.weekly.flatMap((d) => d.shows), ...schedule.oneOffs.map((o) => o.show).filter(Boolean)].some((s) => s.photo === file);
@@ -123,6 +126,29 @@ export function applyOps(state, ops, ctx) {
     const going = images.some((i) => i.path === path && i.action === "delete");
     if (coming ? false : going || !tree.has(path)) refuse("not_safe_to_undo", show.photo);
   }
+
+  const findLink = (id) => {
+    const index = state.links.findIndex((l) => l.id === id);
+    if (index < 0) refuse("no_such_link", id);
+    return index;
+  };
+  // One page of each kind at most, each a safe address of that kind, in a fixed order.
+  function linkPages(pages) {
+    if (!Array.isArray(pages) || pages.length < 1 || pages.length > LINK_TYPES.length) refuse("bad_pages");
+    const byType = new Map();
+    for (const page of pages) {
+      const url = cleanPageUrl(page?.type, page?.url);
+      if (!url) refuse("bad_address", page?.type);
+      if (byType.has(page.type)) refuse("bad_pages");
+      byType.set(page.type, url);
+    }
+    return LINK_TYPES.filter((t) => byType.has(t)).map((t) => ({ type: t, url: byType.get(t) }));
+  }
+  const linkName = (name, except) => {
+    text(name, "name", 80);
+    if (state.links.some((l, i) => i !== except && l.name.toLowerCase() === name.toLowerCase())) refuse("link_exists");
+    return name;
+  };
 
   const album = (title) => state.gallery.find((a) => a.title === title) || refuse("no_such_album", title);
   const findShow = (id) => {
@@ -275,6 +301,56 @@ export function applyOps(state, ops, ctx) {
         touched.add(`album:${op.record.title}`);
         break;
       }
+      case "addLink": {
+        if (state.links.length >= 60) refuse("too_many_links");
+        const name = linkName(op.name, -1);
+        const pages = linkPages(op.pages);
+        const image = take(op.image, "link", "links").file;
+        const record = { id: `l-${changeId.slice(0, 8)}-${++serial}`, name, image, pages };
+        state.links.push(record);
+        newNames.push(name);
+        undo.unshift({ op: "removeLink", id: record.id });
+        touched.add(`link:${record.id}`);
+        break;
+      }
+      case "editLink": {
+        const index = findLink(op.id);
+        const before = state.links[index];
+        const after = { ...before };
+        if (op.name !== undefined && op.name !== before.name) { after.name = linkName(op.name, index); newNames.push(after.name); }
+        if (op.pages !== undefined) after.pages = linkPages(op.pages);
+        if (op.image) after.image = take(op.image, "link", "links").file;
+        if (JSON.stringify(after) === JSON.stringify(before)) refuse("nothing_changed");
+        state.links[index] = after;
+        const changed = after.image !== before.image;
+        undo.unshift({ op: "_linkSet", id: before.id, record: before, shas: changed ? deleteFiles([before.image]) : {}, drop: changed ? after.image : undefined });
+        touched.add(`link:${before.id}`);
+        break;
+      }
+      case "_linkSet": {
+        const index = findLink(op.id);
+        const current = state.links[index];
+        state.links[index] = op.record;
+        restoreFiles(op.shas);
+        const swapped = op.record.image !== current.image;
+        undo.unshift({ op: "_linkSet", id: op.id, record: current, shas: swapped && op.drop ? deleteFiles([op.drop]) : {}, drop: swapped ? op.record.image : undefined });
+        touched.add(`link:${op.id}`);
+        break;
+      }
+      case "removeLink": {
+        const index = findLink(op.id);
+        const [record] = state.links.splice(index, 1);
+        undo.unshift({ op: "_linkRestore", record, index, shas: deleteFiles([record.image]) });
+        touched.add(`link:${record.id}`);
+        break;
+      }
+      case "_linkRestore": {
+        state.links.splice(Math.min(op.index, state.links.length), 0, op.record);
+        restoreFiles(op.shas);
+        undo.unshift({ op: "removeLink", id: op.record.id });
+        touched.add(`link:${op.record.id}`);
+        break;
+      }
       case "setHomePhotos": {
         if (!Array.isArray(op.srcs) || op.srcs.length < MIN_HOME || new Set(op.srcs).size !== op.srcs.length) refuse("home_count");
         const known = new Map(state.home.map((p) => [p.src, p]));
@@ -416,6 +492,9 @@ export function describe(ops) {
       case "removePhotos": return `took down ${plural(op.srcs.length, "photo")} from ${op.album}`;
       case "removeAlbum": return `took down the album ${op.album}`;
       case "setHomePhotos": return "changed the home page photos";
+      case "addLink": return `added a link for ${op.name}`;
+      case "editLink": return "changed a link";
+      case "removeLink": return "took down a link";
       case "weeklyMove": return "changed a show's time, every week";
       case "weeklyOff": return "took a show off, every week";
       case "weeklyAdd": return `added ${op.presenter} on ${op.day}s`;

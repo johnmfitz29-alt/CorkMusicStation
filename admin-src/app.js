@@ -169,7 +169,44 @@
     homeNeed: "The home page needs at least 3 photos.",
     homeNext: "These are right",
     saidHome1: "The home page will show these ",
-    saidHome2: " photos."
+    saidHome2: " photos.",
+    links: "Links",
+    linkNew: "Add a new link",
+    linkCurrent: "Links on the website now",
+    linkChange: "Change this one",
+    linkDown: "Take this one down",
+    linkDownCheck: "This takes this link off the website: ",
+    linkName: "Who is the link for?",
+    linkNameHint: "For example: Louise Morrissey",
+    linkExists: "There's already a link with that name. Please go back and change that one instead.",
+    linkPicture: "Please choose a picture for this link",
+    linkPagesIntro: "Tap a kind of page to add it or change it.",
+    linkNone: "not added",
+    linkNeedOne: "Please add at least one page first.",
+    linkNoChange: "Nothing has been changed yet.",
+    linkChangeName: "Change the name",
+    linkChangePicture: "Change the picture",
+    linkAddressTitle: "What is the address?",
+    linkCopyTip: "It's easiest to copy the address from the top of the page in your browser.",
+    linkAddressBad1: "That address doesn't look right for ",
+    linkAddressBad2: ". Please check it and try again.",
+    linkBadAddress: "One of the addresses wasn't accepted. Please go back and check them.",
+    linkRemovePage: "Remove this page",
+    kindWebsite: "Website",
+    kindFacebook: "Facebook",
+    kindYoutube: "YouTube",
+    kindInstagram: "Instagram",
+    kindTiktok: "TikTok",
+    kindSpotify: "Spotify",
+    hintWebsite: "For example: www.louisemorrissey.com",
+    hintFacebook: "For example: www.facebook.com/name",
+    hintYoutube: "For example: www.youtube.com/@name",
+    hintInstagram: "For example: www.instagram.com/name",
+    hintTiktok: "For example: www.tiktok.com/@name",
+    hintSpotify: "For example: open.spotify.com/artist/…",
+    saidLinkNew: "New link for ",
+    saidLinkChange: "Change the link for ",
+    saidLinkWith: ", with: "
   }/*WORDS-END*/;
 
   var main = document.getElementById("main");
@@ -252,7 +289,7 @@
         if (r.signIn) { showSignIn(); return true; }
         if (r.offline) { showRetry(WORDS.tryLater, attempt, ready); return true; }
         if (r.code === "busy" || r.code === "slow_down") { showRetry(WORDS.busy, attempt, ready); return true; }
-        var refused = { on_home_page: WORDS.onHome, clash: WORDS.clashNow }[r.code];
+        var refused = { on_home_page: WORDS.onHome, clash: WORDS.clashNow, link_exists: WORDS.linkExists, bad_address: WORDS.linkBadAddress }[r.code];
         if (refused) {
           screen();
           make("p", { textContent: refused, className: "readback" }, main);
@@ -1420,6 +1457,193 @@
     button(WORDS.carryNo, box, function () { drafts.clear(); home(); }, "plain");
   }
 
+  /* ---------- Links: a name, a picture, and one page of each kind ---------- */
+  var KINDS = [
+    { type: "website", label: WORDS.kindWebsite, hint: WORDS.hintWebsite, hosts: null },
+    { type: "facebook", label: WORDS.kindFacebook, hint: WORDS.hintFacebook, hosts: ["facebook.com", "www.facebook.com", "m.facebook.com"] },
+    { type: "youtube", label: WORDS.kindYoutube, hint: WORDS.hintYoutube, hosts: ["youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"] },
+    { type: "instagram", label: WORDS.kindInstagram, hint: WORDS.hintInstagram, hosts: ["instagram.com", "www.instagram.com"] },
+    { type: "tiktok", label: WORDS.kindTiktok, hint: WORDS.hintTiktok, hosts: ["tiktok.com", "www.tiktok.com"] },
+    { type: "spotify", label: WORDS.kindSpotify, hint: WORDS.hintSpotify, hosts: ["open.spotify.com"] }
+  ];
+  var link = null, linkList = [];
+  var ODD_IN_ADDRESS = "<>\"'`^{}|" + String.fromCharCode(92);
+
+  /* Turns what he typed into a full address, or nothing if it isn't one of that kind. The server checks again. */
+  function cleanAddress(kind, typed) {
+    var s = typed.trim();
+    if (!s) return null;
+    if (s.toLowerCase().indexOf("http://") === 0) s = s.slice(7);
+    if (s.toLowerCase().indexOf("https://") !== 0) s = "https://" + s;
+    var url;
+    try { url = new URL(s); } catch (e) { return null; }
+    if (url.protocol !== "https:" || url.username || url.password || url.port) return null;
+    var host = url.hostname.toLowerCase(), href = url.href;
+    if (host.indexOf(".") < 1 || href.length > 200) return null;
+    for (var i = 0; i < href.length; i++) {
+      var code = href.charCodeAt(i);
+      if (code < 33 || code > 126 || ODD_IN_ADDRESS.indexOf(href.charAt(i)) >= 0) return null;
+    }
+    if (kind.hosts && (kind.hosts.indexOf(host) < 0 || url.pathname.length < 2)) return null;
+    return href;
+  }
+  function shortAddress(url) { return url.slice(8).split("/").filter(Boolean).join("/"); }
+  function linkSnapshot() { return JSON.stringify({ name: link.name, pages: link.pages }); }
+
+  function linksScreen() {
+    current = WORDS.links;
+    link = null;
+    screen(WORDS.links);
+    make("p", { textContent: WORDS.loading }, main);
+    Promise.all([readData("links.js", "LINKS"), loadNames()]).then(function (all) {
+      var r = all[0];
+      if (r.signIn || all[1].signIn) return showSignIn();
+      if (!r.ok || !all[1].ok) return showRetry(WORDS.tryLater, linksScreen, home);
+      linkList = r.value;
+      screen(WORDS.links);
+      button(WORDS.linkNew, main, linkAdd);
+      if (linkList.length) make("h2", { textContent: WORDS.linkCurrent }, main);
+      linkList.forEach(function (l) {
+        var box = make("div", { className: "entry" }, main);
+        make("img", { src: "/" + l.image, alt: l.name, className: "picture small", loading: "lazy" }, box);
+        make("p", { textContent: l.name, className: "note" }, box);
+        var row = make("div", { className: "stack" }, box);
+        button(WORDS.linkChange, row, function () {
+          var pages = {};
+          l.pages.forEach(function (p) { pages[p.type] = p.url; });
+          link = { id: l.id, name: l.name, image: l.image, pages: pages, canvas: null, isNew: false };
+          link.orig = linkSnapshot();
+          linkPages();
+        }, "plain");
+        button(WORDS.linkDown, row, function () {
+          finishSaved(WORDS.linkDownCheck + l.name, [{ op: "removeLink", id: l.id }], linksScreen, [], function (at) {
+            make("img", { src: "/" + l.image, alt: l.name, className: "picture" }, at);
+          });
+        }, "plain");
+      });
+      backTo(home);
+    });
+  }
+
+  function nameTaken(name) {
+    return linkList.some(function (l) { return l.id !== link.id && l.name.toLowerCase() === name.toLowerCase(); });
+  }
+  function linkAskName(next, back) {
+    askName(WORDS.linkName, WORDS.linkNameHint, "events", link.name, function (name) {
+      if (nameTaken(name)) {
+        screen();
+        make("p", { textContent: WORDS.linkExists, className: "readback" }, main);
+        return backTo(function () { linkAskName(next, back); });
+      }
+      link.name = name;
+      next();
+    }, back);
+  }
+  function linkAdd() {
+    link = { name: "", pages: {}, canvas: null, isNew: true, orig: "" };
+    linkAskName(function () { linkPicture(linkPages, linkAdd); }, linksScreen);
+  }
+
+  function linkPicture(next, back) {
+    current = WORDS.linkPicture;
+    screen(WORDS.linkPicture);
+    var input = make("input", { type: "file", accept: "image/*,.heic,.heif", hidden: true, id: "file" }, main);
+    var note = make("p", { className: "readback", hidden: true, role: "status" }, main);
+    button(WORDS.choose, main, function () { input.click(); });
+    backTo(back);
+    input.addEventListener("change", function () {
+      var file = input.files[0];
+      if (!file) return;
+      note.hidden = false;
+      note.textContent = WORDS.reading;
+      if (file.size > MAX_FILE) { note.textContent = WORDS.tooLarge; return; }
+      file.arrayBuffer().then(function (buffer) {
+        var bytes = new Uint8Array(buffer), kind = kindOf(bytes);
+        if (kind === "heic") return openHeic(bytes);
+        if (kind === "image") return openImage(file);
+        throw problem(WORDS.cannotOpen);
+      }).then(function (canvas) {
+        if (canvas.originalLong < 200) throw problem(WORDS.tooSmall);
+        link.canvas = canvas;
+        next();
+      }).catch(function (e) { note.textContent = e.word || WORDS.cannotOpen; });
+    });
+  }
+
+  function linkPages() {
+    current = WORDS.links;
+    screen(link.name);
+    if (link.canvas) shown(link.canvas, main, link.name);
+    else make("img", { src: "/" + link.image, alt: link.name, className: "picture small" }, main);
+    make("p", { textContent: WORDS.linkPagesIntro }, main);
+    var box = make("div", { className: "stack" }, main);
+    KINDS.forEach(function (kind) {
+      var b = button("", box, function () { linkAddress(kind); }, "plain");
+      make("span", { textContent: kind.label, className: "when note" }, b);
+      make("span", { textContent: link.pages[kind.type] ? shortAddress(link.pages[kind.type]) : WORDS.linkNone, className: "address" }, b);
+    });
+    if (!link.isNew) {
+      button(WORDS.linkChangeName, box, function () { linkAskName(linkPages, linkPages); }, "plain");
+      button(WORDS.linkChangePicture, box, function () { linkPicture(linkPages, linkPages); }, "plain");
+    }
+    var note = make("p", { className: "readback", hidden: true, role: "status" }, main);
+    button(WORDS.homeNext, main, function () {
+      note.hidden = false;
+      if (!Object.keys(link.pages).length) { note.textContent = WORDS.linkNeedOne; return; }
+      if (!link.isNew && !link.canvas && linkSnapshot() === link.orig) { note.textContent = WORDS.linkNoChange; return; }
+      linkReadback();
+    });
+    backTo(linksScreen);
+  }
+
+  function linkAddress(kind) {
+    current = kind.label;
+    screen(kind.label);
+    make("p", { textContent: WORDS.linkAddressTitle, className: "note" }, main);
+    make("p", { textContent: kind.hint }, main);
+    make("p", { textContent: WORDS.linkCopyTip }, main);
+    var had = link.pages[kind.type];
+    var input = make("input", { type: "text", value: had ? shortAddress(had) : "", className: "text", autocomplete: "off", spellcheck: false, inputMode: "url" }, main);
+    input.setAttribute("aria-label", kind.label);
+    input.setAttribute("autocapitalize", "off");
+    var note = make("p", { className: "readback", hidden: true, role: "status" }, main);
+    var box = make("div", { className: "stack" }, main);
+    button(WORDS.dateNext, box, function () {
+      var address = cleanAddress(kind, input.value);
+      if (!address) {
+        note.hidden = false;
+        note.textContent = input.value.trim() ? WORDS.linkAddressBad1 + kind.label + WORDS.linkAddressBad2 : WORDS.needText;
+        return;
+      }
+      link.pages[kind.type] = address;
+      linkPages();
+    });
+    if (had) button(WORDS.linkRemovePage, box, function () { delete link.pages[kind.type]; linkPages(); }, "plain");
+    backTo(linkPages);
+    input.focus();
+  }
+
+  function linkReadback() {
+    var pages = KINDS.filter(function (k) { return link.pages[k.type]; });
+    var sentence = (link.isNew ? WORDS.saidLinkNew : WORDS.saidLinkChange) + link.name + WORDS.saidLinkWith +
+      pages.map(function (k) { return k.label; }).join(", ") + ".";
+    var chosen = link, picture = link.canvas;
+    finish(sentence, "publish", function (id, ready) {
+      var op = { name: chosen.name, pages: pages.map(function (k) { return { type: k.type, url: chosen.pages[k.type] }; }) };
+      if (chosen.isNew) op.op = "addLink"; else { op.op = "editLink"; op.id = chosen.id; }
+      if (ready.receipt) op.image = ready.receipt;
+      return { changeId: id, ops: [op] };
+    }, linkPages, {
+      preview: function (at) {
+        if (picture) shown(picture, at, chosen.name);
+        else make("img", { src: "/" + chosen.image, alt: chosen.name, className: "picture" }, at);
+      },
+      prepare: picture ? function (id) {
+        return call("upload?kind=link&change=" + id, { method: "POST", headers: { "content-type": "text/plain" }, body: jpegText(picture, 800) });
+      } : null
+    });
+  }
+
   function resumePhotos(d) {
     current = "resume";
     screen();
@@ -1457,6 +1681,7 @@
     button(WORDS.photos, box, photosScreen);
     button(WORDS.schedule, box, scheduleScreen);
     button(WORDS.homePhotos, box, homeScreen);
+    button(WORDS.links, box, linksScreen);
     button(WORDS.undo, box, undoScreen);
   }
 

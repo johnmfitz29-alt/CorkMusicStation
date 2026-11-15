@@ -6,6 +6,7 @@ export const DATA_FILES = new Set([
   "site/data/posters.js",
   "site/data/gallery.js",
   "site/data/home-photos.js",
+  "site/data/links.js",
   "site/data/change-log.js",
   "site/data/last-change.json",
 ]);
@@ -19,6 +20,7 @@ const IMAGE_FOLDERS = {
   gallery: ["create", "delete"],
   collection: ["create", "delete"],
   presenters: ["create"],
+  links: ["create", "delete"],
 };
 
 // Underscores and .png appear only in older photos' names, which can still be taken down or put back.
