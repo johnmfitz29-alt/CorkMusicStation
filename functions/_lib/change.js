@@ -33,7 +33,7 @@ const SERIAL = {
 export const validChangeId = (id) => typeof id === "string" && ID.test(id);
 
 export function reply(status, body) {
-  return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
+  return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store", "x-content-type-options": "nosniff" } });
 }
 
 export async function readLog(api, ref) {

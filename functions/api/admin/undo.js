@@ -1,6 +1,7 @@
 // Reverses one earlier change with a new commit. History is never rewritten.
 
 import { requireLogin } from "../../_lib/auth.js";
+import { readText } from "../../_lib/body.js";
 import { reply, runChange, undoable, validChangeId } from "../../_lib/change.js";
 import { Refusal } from "../../_lib/ops.js";
 
@@ -9,9 +10,11 @@ export async function onRequestPost(context) {
   if (login instanceof Response) return login;
 
   const { request, env } = context;
+  const text = await readText(request, 2048);
+  if (text === null) return reply(413, { ok: false, code: "too_big" });
   let body;
   try {
-    body = JSON.parse(await request.text());
+    body = JSON.parse(text);
   } catch {
     return reply(400, { ok: false, code: "bad_request" });
   }

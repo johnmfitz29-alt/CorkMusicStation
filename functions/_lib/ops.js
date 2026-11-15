@@ -16,6 +16,8 @@ export class Refusal extends Error {
   }
 }
 const refuse = (code, detail) => { throw new Refusal(code, detail); };
+// Markup, control characters, and the invisible and direction-flipping characters used to disguise text.
+const HIDDEN_OR_MARKUP = /[<>\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff]/;
 
 const NEEDS = {
   addPoster: ["posters"], removePoster: ["posters"], _posterRestore: ["posters"],
@@ -33,7 +35,7 @@ NEEDS.removePoster = ["posters", "gallery", "home", "schedule"];
 export function neededFiles(ops) {
   const out = new Set();
   for (const op of ops) {
-    if (!NEEDS[op?.op]) refuse("unknown_step", op?.op);
+    if (!op || typeof op.op !== "string" || !Object.hasOwn(NEEDS, op.op)) refuse("unknown_step");
     NEEDS[op.op].forEach((n) => out.add(n));
   }
   return out;
@@ -49,7 +51,7 @@ export function receiptsIn(ops) {
 }
 
 function text(value, label, max = 120) {
-  if (typeof value !== "string" || !value.trim() || value !== value.trim() || value.length > max || /[<>\u0000-\u001f]/.test(value)) {
+  if (typeof value !== "string" || !value.trim() || value !== value.trim() || value.length > max || HIDDEN_OR_MARKUP.test(value)) {
     refuse("bad_text", label);
   }
   return value;

@@ -78,7 +78,7 @@ export function checkSite(root, { overrides = {}, gitLog } = {}) {
 
   const needText = (where, value) => {
     if (typeof value !== "string" || !value.trim()) fail(`${where}: missing text`);
-    else if (/[<>\u0000-\u001f]/.test(value)) fail(`${where}: contains characters that are not allowed`);
+    else if (/[<>\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff]/.test(value)) fail(`${where}: contains characters that are not allowed`);
   };
   const needImage = (where, file) => {
     if (typeof file !== "string" || !IMAGE.test(file) || file.includes("..")) return fail(`${where}: bad image path ${file}`);

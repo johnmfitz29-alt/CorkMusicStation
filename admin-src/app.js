@@ -415,7 +415,7 @@
   function openPdf(bytes) {
     return import(VENDOR + "pdf.min.mjs").then(function (pdfjs) {
       pdfjs.GlobalWorkerOptions.workerSrc = VENDOR + "pdf.worker.min.mjs";
-      return pdfjs.getDocument({ data: bytes }).promise;
+      return pdfjs.getDocument({ data: bytes, isEvalSupported: false }).promise;
     }).catch(function (e) {
       throw problem(e && e.name === "PasswordException" ? WORDS.pdfLocked : WORDS.cannotOpen);
     });

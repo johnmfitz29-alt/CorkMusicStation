@@ -14,7 +14,7 @@ while ($l.IsListening) {
     if ($path.EndsWith('/')) { $path += 'index.html' }
     $file = [IO.Path]::GetFullPath((Join-Path $root $path.TrimStart('/')))
     $status = 200
-    if (-not $file.StartsWith($root, [StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath $file -PathType Leaf)) { $file = Join-Path $root '404.html'; $status = 404 }
+    if (-not $file.StartsWith($root + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath $file -PathType Leaf)) { $file = Join-Path $root '404.html'; $status = 404 }
     $ext = [IO.Path]::GetExtension($file).ToLower()
     $res.ContentType = if ($types[$ext]) { $types[$ext] } else { 'application/octet-stream' }
     $res.AddHeader('Accept-Ranges','bytes')
