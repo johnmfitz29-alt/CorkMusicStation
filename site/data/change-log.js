@@ -1,5 +1,6 @@
 /* The record behind Undo. Written only by the admin area. */
 window.CHANGE_LOG = [
+{"id":"chg-a8d9b179072804de84e620da","at":"2026-11-15T16:53:10.674Z","summary":"took down a gig poster","touched":["poster:images/posters/rui-glenn-2-copy_orig.jpg"],"undo":[{"op":"_posterRestore","record":{"file":"images/posters/rui-glenn-2-copy_orig.jpg","w":1080,"h":1398,"lastDate":"2026-12-31"},"index":0,"shas":{"images/posters/rui-glenn-2-copy_orig.jpg":"d8733315a6fb7ea7ea98392398c7add5fc553e02"}}]},
 {"id":"chg-1d193bd692ec79f3c26d13a7","at":"2026-11-09T21:26:56.039Z","summary":"took a show off for 2027-06-21","touched":["oneoff:o-chg-1d19-1"],"undo":[{"op":"_oneOffRemove","id":"o-chg-1d19-1"}]},
 {"id":"chg-22188e65e29236ce0ab76e62","at":"2026-11-09T21:25:20.076Z","summary":"took a show off, every week","touched":["show:mon-ita-2400"],"undo":[{"op":"_showRestore","day":"Monday","show":{"id":"mon-ita-2400","presenter":"Ita","time":"12.00 midnight - 4.15 am","start":"24:00","end":"28:15","repeat":true,"contact":"For Requests Email {email}","photo":"images/presenters/caf31196b49b926f.jpg"}}]},
 {"id":"chg-a7b32638cd5e20edc00758c5","at":"2026-11-09T21:24:30.766Z","summary":"added Ita on Mondays","touched":["show:mon-ita-2400"],"undo":[{"op":"_showRemove","showId":"mon-ita-2400"}]},
