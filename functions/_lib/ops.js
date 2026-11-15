@@ -16,8 +16,9 @@ export class Refusal extends Error {
   }
 }
 const refuse = (code, detail) => { throw new Refusal(code, detail); };
-// Markup, control characters, and the invisible and direction-flipping characters used to disguise text.
-const HIDDEN_OR_MARKUP = /[<>\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff]/;
+// Markup, control characters, look-alike spaces, and the invisible and direction-flipping characters
+// used to disguise text or to make two names look the same.
+const HIDDEN_OR_MARKUP = /[<>\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/;
 
 const NEEDS = {
   addPoster: ["posters"], removePoster: ["posters"], _posterRestore: ["posters"],
@@ -51,7 +52,7 @@ export function receiptsIn(ops) {
 }
 
 function text(value, label, max = 120) {
-  if (typeof value !== "string" || !value.trim() || value !== value.trim() || value.length > max || HIDDEN_OR_MARKUP.test(value)) {
+  if (typeof value !== "string" || !value.trim() || value !== value.trim() || value.length > max || HIDDEN_OR_MARKUP.test(value) || value !== value.normalize("NFC") || value.includes("  ")) {
     refuse("bad_text", label);
   }
   return value;
