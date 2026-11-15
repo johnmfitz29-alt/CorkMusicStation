@@ -283,9 +283,15 @@ test("an entry is unsafe once something newer touched the same record (R25)", as
   assert.equal((await undoIt(u)).status, 200);
 });
 
-test("undo reaches only the last 20 changes (R24)", async () => {
+test("undo reaches only the last 20 changes (R24)", async (t) => {
   const ids = [];
+  // Two minutes apart, because changes faster than that are refused.
+  const realNow = Date.now;
+  let clock = realNow();
+  Date.now = () => clock;
+  t.after(() => { Date.now = realNow; });
   for (let i = 0; i < 22; i++) {
+    clock += 2 * 60 * 1000;
     const c = newId();
     ids.push(c);
     // A different Thursday each time, so that every entry touches its own record.

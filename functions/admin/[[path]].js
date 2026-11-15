@@ -28,6 +28,7 @@ export async function onRequestGet(context) {
       "cache-control": "no-store",
       "content-security-policy": policy,
       "x-frame-options": "DENY",
+      "cross-origin-opener-policy": "same-origin",
       "x-content-type-options": "nosniff",
       "x-robots-tag": "noindex",
       "referrer-policy": "same-origin",
