@@ -277,3 +277,20 @@ test("pages cannot be driven by a window another site opened", async () => {
   const r = await adminPage({ env: ENV, request: new Request(HOME + "/admin/", { headers: { "Cf-Access-Jwt-Assertion": auth } }) });
   assert.equal(r.headers.get("cross-origin-opener-policy"), "same-origin");
 });
+
+test("pages may read only from this site and the radio provider's song feed", () => {
+  const policy = fs.readFileSync(path.join(root, "site/_headers"), "utf8").match(/Content-Security-Policy: (.*)/)[1];
+  assert.match(policy, /connect-src 'self' https:\/\/www\.radiojar\.com;/);
+  assert.match(policy, /script-src 'self';/);
+  const config = fs.readFileSync(path.join(root, "site/data/config.js"), "utf8");
+  assert.match(config, /nowPlayingUrl: "https:\/\/www\.radiojar\.com\/api\/stations\/[a-z0-9]+\/now_playing\/"/);
+});
+
+test("the song line is escaped, trimmed and hidden when there is no title", () => {
+  const js = fs.readFileSync(path.join(root, "site/assets/site.js"), "utf8");
+  assert.ok(js.includes("esc(song.title)") && js.includes("esc(song.artist)"));
+  assert.ok(js.includes(".slice(0, 120)"));
+  assert.ok(js.includes("song = title ?"));
+  assert.ok(js.includes("unknown( artist)?") && js.includes("track ?[0-9]+"), "placeholder names are left out");
+  assert.ok(!/song\.(title|artist)\s*\+(?![^;]*esc)/.test(js.replace(/esc\(song\.(title|artist)\)/g, "")));
+});

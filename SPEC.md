@@ -382,3 +382,12 @@ Resend is set up with `corkmusicstation.com` verified, a DMARC record added, and
 **Not tested:** anything behind the login on the live site, because Claude has no login. The code fixes in this section have not run on Cloudflare.
 
 **Update, 15 November 2026, 19:30:** the owner's actions in checklist section I are done and confirmed from outside. The `_acme-challenge` record, the old mail records and the merged branch are gone, SPF is `v=spf1 -all`, DMARC is `p=quarantine`, Resend's records are intact, the analytics script is no longer added, and Get Help still arrives. The open question is closed: GitHub now shows two changes made through the live admin area on `main` (a one-date show added, then undone), so a real change and its Undo are proven on the live address. Still to do: DMARC to `p=reject` in a week, DNSSEC after the registrar move, and the code fixes in this section, which are not yet live.
+
+## 19. Song that is playing (15 November 2026)
+
+The on-air panel shows "Now playing:" with the title and artist, read every 20 seconds from the radio provider's public feed (`nowPlayingUrl` in `site/data/config.js`). Nothing is asked of the station's editor.
+
+- The security rules now let pages read from `https://www.radiojar.com` and nowhere else outside this site.
+- The text is shown exactly as the playout system sends it, as plain text, cut at 120 characters. Hostile text in the feed was tried and did not run.
+- The line is hidden when there is no title, when the feed has been unreachable for 90 seconds, or when the title is only a placeholder such as "Track 6" or "Untitled". "Unknown Artist" is dropped and the title kept.
+- Tested in a browser with the security rules applied, at phone and desktop widths, against the real feed. Not yet run on Cloudflare.
