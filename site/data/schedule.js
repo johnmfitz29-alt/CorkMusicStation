@@ -42,5 +42,7 @@ window.SCHEDULE = {
   {"id":"sun-jimmy-reidy-2200","presenter":"Jimmy Reidy","show":"Jimmy Reidy & Friends","repeat":true,"time":"10.00 pm - 11.15 pm","start":"22:00","end":"23:15","contact":"Email Jimmy {email}","photo":"images/presenters/jimmy-reidy-2.jpg"}
 ]}
 ],
-"oneOffs": []
+"oneOffs": [
+{"id":"o-chg-5f63-1","date":"2026-11-16","type":"add","show":{"id":"add-o-chg-5f63-1","presenter":"F","time":"9.00 pm - 10.00 pm","start":"21:00","end":"22:00","contact":"For Requests Email {email}","photo":"images/presenters/caf31196b49b926f.jpg"}}
+]
 };
