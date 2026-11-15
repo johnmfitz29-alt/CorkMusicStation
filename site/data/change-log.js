@@ -1,5 +1,6 @@
 /* The record behind Undo. Written only by the admin area. */
 window.CHANGE_LOG = [
+{"id":"chg-5c482251651ab6095e3268cf","at":"2026-11-15T19:26:15.164Z","summary":"took down a gig poster","touched":["poster:images/posters/rui-glenn-2-copy_orig.jpg"],"undo":[{"op":"_posterRestore","record":{"file":"images/posters/rui-glenn-2-copy_orig.jpg","w":1080,"h":1398,"lastDate":"2026-12-31"},"index":0,"shas":{"images/posters/rui-glenn-2-copy_orig.jpg":"d8733315a6fb7ea7ea98392398c7add5fc553e02"}}]},
 {"id":"chg-caa1d8b5ea0f9b80d867f412","at":"2026-11-15T16:53:45.442Z","summary":"undid: took down a gig poster","touched":["poster:images/posters/rui-glenn-2-copy_orig.jpg"],"undo":[{"op":"removePoster","file":"images/posters/rui-glenn-2-copy_orig.jpg"}]},
 {"id":"chg-a8d9b179072804de84e620da","at":"2026-11-15T16:53:10.674Z","summary":"took down a gig poster","touched":["poster:images/posters/rui-glenn-2-copy_orig.jpg"],"undo":[{"op":"_posterRestore","record":{"file":"images/posters/rui-glenn-2-copy_orig.jpg","w":1080,"h":1398,"lastDate":"2026-12-31"},"index":0,"shas":{"images/posters/rui-glenn-2-copy_orig.jpg":"d8733315a6fb7ea7ea98392398c7add5fc553e02"}}]},
 {"id":"chg-1d193bd692ec79f3c26d13a7","at":"2026-11-09T21:26:56.039Z","summary":"took a show off for 2027-06-21","touched":["oneoff:o-chg-1d19-1"],"undo":[{"op":"_oneOffRemove","id":"o-chg-1d19-1"}]},
