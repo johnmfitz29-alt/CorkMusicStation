@@ -382,3 +382,33 @@ Resend is set up with `corkmusicstation.com` verified, a DMARC record added, and
 **Not tested:** anything behind the login on the live site, because Claude has no login. The code fixes in this section have not run on Cloudflare.
 
 **Update, 15 November 2026, 19:30:** the owner's actions in checklist section I are done and confirmed from outside. The `_acme-challenge` record, the old mail records and the merged branch are gone, SPF is `v=spf1 -all`, DMARC is `p=quarantine`, Resend's records are intact, the analytics script is no longer added, and Get Help still arrives. The open question is closed: GitHub now shows two changes made through the live admin area on `main` (a one-date show added, then undone), so a real change and its Undo are proven on the live address. Still to do: DMARC to `p=reject` in a week, DNSSEC after the registrar move, and the code fixes in this section, which are not yet live.
+
+## 19. Song that is playing (15 November 2026)
+
+The on-air panel shows "Now playing:" with the title and artist, read every 20 seconds from the radio provider's public feed (`nowPlayingUrl` in `site/data/config.js`). Nothing is asked of the station's editor.
+
+- The security rules now let pages read from `https://www.radiojar.com` and nowhere else outside this site.
+- The text is shown exactly as the playout system sends it, as plain text, cut at 120 characters. Hostile text in the feed was tried and did not run.
+- The line is hidden when there is no title, when the feed has been unreachable for 90 seconds, or when the title is only a placeholder such as "Track 6" or "Untitled". "Unknown Artist" is dropped and the title kept.
+- Tested in a browser with the security rules applied, at phone and desktop widths, against the real feed. Not yet run on Cloudflare.
+
+## 20. Undo removes a presenter photo it brought in (15 November 2026)
+
+Found on the live site: adding a show for a new presenter and then undoing it removed the show but left the photo file, reachable by its address. Now the undo removes the photo too, unless another show has started using it, and undoing the undo puts it back. Only photos with a generated name can be removed this way. The station's own presenter photos still cannot be removed by the admin area.
+
+A show is no longer put back if its photo is missing from the site and cannot be restored with it, which would have broken the next build. The leftover photo from the live test was removed, so the "undid: added F" entry can no longer be re-done, and says so safely if tried.
+
+Tested against the stand-in GitHub for weekly and one-date shows, including redo, a photo shared with another show, and existing presenters. Not yet run on Cloudflare.
+
+## 21. Links, a sixth button (15 November 2026)
+
+The owner asked for the Links page to take social media pages, chosen when a link is created and editable afterwards. This adds a sixth button, **Links**, so the home screen and the printed card now have six.
+
+- **An entry** is a name, a required picture, and one page of each kind at most: Website, Facebook, YouTube, Instagram, TikTok, Spotify. On the public page a website shows its own address and the others show the name of the service. Links open in a new tab.
+- **He can** add an entry, change its name, picture or pages, remove a page, and take an entry down. Every change has the usual read-back, Undo and alert email. New names are sent to the owner.
+- **Addresses** must be `https`, with no sign-in details or port. Each social kind accepts only that service's own addresses. He can type or paste without the `https://`. The server and the build check apply the same rules.
+- **The two existing entries** moved unchanged from the page into `site/data/links.js`.
+- **Limits:** 60 entries.
+- **Saved as he goes:** the name, picture and pages are kept after every step, so a closed window brings back "You were working on a link. Carry on?" for a new link or a change. Tested in a browser for both.
+
+Tested: 9 new automated tests, including 26 unsafe or wrong addresses, and the full flow in a browser against the stand-in GitHub (add with a picture, a repeated name, wrong-service and `javascript:` addresses, change, remove a page, Undo, and the public page at phone width). Not yet run on Cloudflare.

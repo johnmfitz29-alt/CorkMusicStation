@@ -100,6 +100,28 @@
   function showName(x) { return esc(x.s.presenter) + (x.s.show ? ": " + esc(x.s.show) : ""); }
   function repeatTag(x) { return x.s.repeat ? '<span class="tag">Repeat</span>' : ""; }
 
+  /* ---------- The song that is playing, read from the radio provider ---------- */
+  var song = null, songSeen = 0;
+  function tidySong(v) { return typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, 120) : ""; }
+  function readSong() {
+    if (!cfg.nowPlayingUrl || document.hidden) return;
+    fetch(cfg.nowPlayingUrl, { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("No song information");
+      return r.json();
+    }).then(function (j) {
+      var title = tidySong(j && j.title), artist = tidySong(j && j.artist);
+      /* Files with no details arrive as "Track 6" by "Unknown Artist". Those say nothing, so they are left out. */
+      if (/^unknown( artist)?$/i.test(artist)) artist = "";
+      if (/^(track ?[0-9]+|unknown( title)?|untitled)$/i.test(title)) title = "";
+      song = title ? { title: title, artist: artist } : null;
+      songSeen = Date.now();
+      renderOnAir();
+    }).catch(function () {
+      /* Keep the last song for a short while, then hide the line rather than show an old one */
+      if (song && Date.now() - songSeen > 90000) { song = null; renderOnAir(); }
+    });
+  }
+
   function renderOnAir() {
     var box = el("onair");
     if (!box || !window.SCHEDULE) return;
@@ -114,6 +136,10 @@
         '<p class="time">' + esc(c.on.s.time) + "</p>";
     } else {
       html += '<p class="who">Music On ' + esc(cfg.stationName) + " 24/7</p>";
+    }
+    if (song) {
+      html += '<p class="song"><span class="song-label">Now playing:</span> <b>' + esc(song.title) + "</b>" +
+        (song.artist ? ", " + esc(song.artist) : "") + "</p>";
     }
     html += '<p class="clocks"><span>Irish time: <b>' + irishNow().label + "</b></span><span>Your time: <b>" + esc(localLabel()) + "</b></span></p></div>";
     if (c.next) {
@@ -265,6 +291,21 @@
     lb.addEventListener("close", function () { img.removeAttribute("src"); });
   }
 
+  /* A website shows its own address. The others show the name of the service. */
+  var PAGE_NAMES = { facebook: "Facebook", youtube: "YouTube", instagram: "Instagram", tiktok: "TikTok", spotify: "Spotify" };
+  function renderLinks() {
+    var box = el("links");
+    if (!box || !window.LINKS) return;
+    box.innerHTML = window.LINKS.map(function (l) {
+      var pages = l.pages.map(function (p) {
+        if (String(p.url).indexOf("https://") !== 0) return "";
+        var label = p.type === "website" ? esc(p.url.slice(8).split("/").filter(Boolean).join("/")) : PAGE_NAMES[p.type];
+        return label ? '<p><a target="_blank" rel="noopener" href="' + esc(p.url) + '">' + label + "</a></p>" : "";
+      }).join("");
+      return '<div class="link-card"><img src="' + esc(l.image) + '" alt="' + esc(l.name) + '" loading="lazy"><div><h2>' + esc(l.name) + "</h2>" + pages + "</div></div>";
+    }).join("");
+  }
+
   function renderRotator() {
     clearInterval(rotatorTimer); rotatorTimer = null;
     var box = el("rotator");
@@ -297,6 +338,7 @@
     renderArchives();
     renderGallery();
     renderRotator();
+    renderLinks();
   }
 
   /* ---------- Moving between pages without stopping the radio. Addresses stay the same. ---------- */
@@ -354,6 +396,9 @@
 
   initPage();
   setInterval(renderOnAir, 10000);
+  readSong();
+  setInterval(readSong, 20000);
+  document.addEventListener("visibilitychange", readSong);
   if (cfg.autoplay && cfg.streamUrl && !wasStopped()) startRadio(true);
   window.CMS = { current: current, showName: showName };
 })();

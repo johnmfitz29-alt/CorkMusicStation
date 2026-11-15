@@ -55,6 +55,8 @@ Open `site/data/config.js` and put the address between the quotes on the `stream
 streamUrl: "https://your-stream-address-here",
 ```
 
+The line below it, `nowPlayingUrl`, is where the site reads the song that is playing. If the stream moves to a different provider, put nothing between its quotes, and ask for the security rules in `site/_headers` to be updated before using a new address.
+
 It must start with `https://`. Until it is filled in, Listen live says the stream has not been added yet. The email address and station name are in the same file.
 
 The radio tries to start when the site opens. Most browsers wait for the visitor's first tap before allowing sound. To make it wait for Listen live instead, change `autoplay: true` to `autoplay: false`.
@@ -62,6 +64,10 @@ The radio tries to start when the site opens. Most browsers wait for the visitor
 ## Home page photos
 
 The photos that rotate on the home page are listed in `site/data/home-photos.js`. The updating app planned for later will let you choose them.
+
+## Links
+
+Use the **Links** button in the updating app to add, change or take down a link. The entries are kept in `site/data/links.js`. Each has a name, a picture in `site/images/links/`, and pages whose `type` is `website`, `facebook`, `youtube`, `instagram`, `tiktok` or `spotify`. Every address must start with `https://`.
 
 ## If something stops working
 
