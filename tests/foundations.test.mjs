@@ -145,6 +145,9 @@ test("allow-list accepts only the intended paths (R52)", () => {
     assert.equal(isAllowedWrite(bad, "update"), false, bad);
   }
   assert.equal(isAllowedWrite("site/images/presenters/existing.jpg", "delete"), false);
+  assert.equal(isAllowedWrite("site/images/presenters/dj-barry.jpg", "delete"), false, "the station's own photos stay");
+  assert.equal(isAllowedWrite("site/images/presenters/0123456789abcdef.jpg", "delete"), true, "one the admin area added can go on undo");
+  assert.equal(isAllowedWrite("site/images/presenters/0123456789abcdef.jpg", "update"), false);
   assert.equal(isAllowedWrite("site/images/gallery/existing.jpg", "update"), false);
   assert.equal(isAllowedWrite("site/data/schedule.js", "delete"), false);
   assert.equal(isAllowedWrite(null, "create"), false);
@@ -201,7 +204,7 @@ test("build check catches invalid data (R51)", () => {
     "impossible poster date": { "posters.js": 'window.POSTERS=[{"file":"images/posters/pob-2026.jpg","w":1,"h":1,"lastDate":"2027-02-29"}];' },
     "missing poster": { "posters.js": 'window.POSTERS=[{"file":"images/posters/gone.jpg","w":1,"h":1}];' },
     "too few home photos": { "home-photos.js": "window.HOME_PHOTOS=[];" },
-    "one-off on the wrong day": { "schedule.js": scheduleText().replace('"oneOffs": []', '"oneOffs": [{"id":"a","date":"2027-12-20","type":"off","showId":"thu-danny-tobin-2100"}]') },
+    "one-off on the wrong day": { "schedule.js": scheduleText().replace(/"oneOffs": \[\s*\]/, '"oneOffs": [{"id":"a","date":"2027-12-20","type":"off","showId":"thu-danny-tobin-2100"}]') },
   };
   for (const [name, overrides] of Object.entries(cases)) {
     assert.ok(checkSite(root, { overrides, gitLog: "" }).failures.length > 0, name);
