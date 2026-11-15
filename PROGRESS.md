@@ -19,6 +19,8 @@ Last updated 8 November 2026. Stages 3 and 4 are done locally. `site/` is built 
 
 **Admin area (9 November 2026):** Stages 1 and 2 are on the `practice` branch. Stage 3 screens are built and uncommitted, tested only on this computer. See `SPEC.md` sections 9 to 13. See "Stage 1 results" in `SPEC.md`. Waiting on the owner for `TO-APPROVE.md` and `SETUP-CHECKLIST.md`. Node.js was installed with winget to run the tests (`npm test`).
 
+**Design refresh (15 November 2026):** the owner asked for the public look to be improved freely. Same wine-red, ivory and single font, with one brass accent added. The logo sits on a music staff in the header, the on-air panel is a bright ivory sheet, and the schedule shows times first with a one-row day bar. Gallery events show a cover photo and posters sit on their own sheets. The Listen button shows moving bars while playing. No names, times or wording changed. The admin area is untouched. Uncommitted, and the screenshots in `review/` are now out of date.
+
 ## Not finished
 
 - **Owner's review of `site/`:** not done yet. Screenshots at 390px and 1280px are in `review/`. Run `preview.ps1` to see the site at http://localhost:8321/.

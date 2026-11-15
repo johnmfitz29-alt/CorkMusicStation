@@ -109,7 +109,9 @@
     var html = (c.on ? '<img class="onair-photo" src="' + esc(c.on.s.photo) + '" alt="' + esc(c.on.s.presenter) + '">' : "") +
       '<div class="now"><p class="label"><span class="tag tag-air">On air now</span></p>';
     if (c.on) {
-      html += '<p class="who">' + showName(c.on) + repeatTag(c.on) + "</p><p>" + esc(c.on.s.time) + "</p>";
+      html += '<p class="who">' + esc(c.on.s.presenter) + "</p>" +
+        (c.on.s.show || c.on.s.repeat ? '<p class="show-name">' + esc(c.on.s.show || "") + repeatTag(c.on) + "</p>" : "") +
+        '<p class="time">' + esc(c.on.s.time) + "</p>";
     } else {
       html += '<p class="who">Music On ' + esc(cfg.stationName) + " 24/7</p>";
     }
@@ -126,11 +128,13 @@
   function renderToday() {
     var box = el("today");
     if (!box || !window.SCHEDULE) return;
-    var now = irishNow(), shows = logic.showsForDate(window.SCHEDULE, now.iso);
+    var now = irishNow(), shows = logic.showsForDate(window.SCHEDULE, now.iso), c = current();
     box.innerHTML = "<h2>" + esc(logic.DAYS[now.day]) + "'s shows</h2>" + shows.map(function (s) {
-      return '<div class="today-row"><img src="' + esc(s.photo) + '" alt="' + esc(s.presenter) + '" loading="lazy"><div>' +
+      var on = c.on && c.on.s.id === s.id;
+      return '<div class="today-row' + (on ? " on-now" : "") + '"><img src="' + esc(s.photo) + '" alt="' + esc(s.presenter) + '" loading="lazy"><div>' +
+        '<p class="time">' + esc(s.time) + "</p>" +
         '<p class="name">' + esc(s.presenter) + (s.repeat ? '<span class="tag">Repeat</span>' : "") + "</p>" +
-        (s.show ? "<p>" + esc(s.show) + "</p>" : "") + "<p>" + esc(s.time) + "</p></div></div>";
+        (s.show ? "<p>" + esc(s.show) + "</p>" : "") + "</div></div>";
     }).join("") + '<p style="margin-top:14px"><a href="dj-schedule.html">See the full schedule</a></p>';
   }
 
@@ -140,15 +144,17 @@
     var now = irishNow(), today = logic.DAYS[now.day], c = current(), jump = "", html = "";
     logic.weekView(window.SCHEDULE, now).forEach(function (d) {
       var isToday = d.day === today;
-      jump += '<a href="#' + d.day + '"' + (isToday ? ' class="today"' : "") + ">" + d.day + (isToday ? " (today)" : "") + "</a>";
+      jump += '<a href="#' + d.day + '"' + (isToday ? ' class="today"' : "") + ' aria-label="' + d.day + (isToday ? " (today)" : "") + '">' +
+        '<span class="d-short" aria-hidden="true">' + d.day.slice(0, 3) + '</span><span class="d-long" aria-hidden="true">' + d.day + "</span></a>";
       html += '<section class="day" id="' + d.day + '"><h2>' + d.day + "</h2>";
       d.shows.forEach(function (s) {
         var on = c.on && c.on.s.id === s.id;
         html += '<article class="show' + (on ? " on-air" : "") + '"><img src="' + esc(s.photo) + '" alt="' + esc(s.presenter) + '" loading="lazy"><div>' +
           (on ? '<p><span class="tag tag-air">On air now</span></p>' : "") +
+          '<p class="time">' + esc(s.time) + "</p>" +
           "<h3>" + esc(s.presenter) + "</h3>" +
           (s.show || s.repeat ? "<p>" + esc(s.show || "") + (s.repeat ? '<span class="tag">Repeat</span>' : "") + "</p>" : "") +
-          '<p class="time">' + esc(s.time) + "</p><p>" + linkContact(s.contact) + "</p></div></article>";
+          "<p>" + linkContact(s.contact) + "</p></div></article>";
       });
       html += "</section>";
     });
@@ -228,7 +234,8 @@
       if (at > 0) a.photos.unshift(a.photos.splice(at, 1)[0]);
     });
     box.innerHTML = window.GALLERY.map(function (a, i) {
-      return '<details class="album"' + (i === 0 ? " open" : "") + "><summary>" + titleHtml(a.title) + "<small>" + a.photos.length + " photos</small></summary><div class=\"grid\"></div></details>";
+      return '<details class="album"' + (i === 0 ? " open" : "") + "><summary>" + (a.photos[0] ? '<img class="cover" src="' + esc(a.photos[0].thumb) + '" alt="" loading="lazy">' : "<span></span>") +
+        "<span>" + titleHtml(a.title) + "<small>" + a.photos.length + " photos</small></span></summary><div class=\"grid\"></div></details>";
     }).join("");
     box.querySelectorAll("details").forEach(function (d, i) {
       if (d.open) fill(d, window.GALLERY[i], i);
@@ -263,7 +270,10 @@
     var box = el("rotator");
     if (!box || !window.HOME_PHOTOS || !window.HOME_PHOTOS.length) return;
     var pics = window.HOME_PHOTOS, i = 0, img = el("rot-img"), btn = el("rot-pause");
-    function set() { img.src = pics[i].src; }
+    function set() {
+      img.src = pics[i].src;
+      img.parentNode.style.setProperty("--rot", 'url("' + new URL(pics[i].thumb || pics[i].src, location.href).href + '")');
+    }
     function step(n) { i = (i + n + pics.length) % pics.length; set(); }
     function stop() { clearInterval(rotatorTimer); rotatorTimer = null; btn.textContent = "Play slideshow"; }
     function start() { rotatorTimer = setInterval(function () { step(1); }, 6000); btn.textContent = "Pause slideshow"; }
