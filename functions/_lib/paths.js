@@ -18,7 +18,9 @@ const IMAGE_FOLDERS = {
   presenters: ["create"],
 };
 
-const IMAGE_PATH = /^site\/images\/([a-z]+)\/([a-z0-9][a-z0-9-]{0,99}\.jpg)$/;
+// Underscores and .png appear only in older photos' names, which can still be taken down or put back.
+// New pictures always get a generated .jpg name.
+const IMAGE_PATH = /^site\/images\/([a-z]+)\/([a-z0-9][a-z0-9_-]{0,99}\.(?:jpg|png))$/;
 
 // action is "create", "update" or "delete".
 export function isAllowedWrite(path, action) {

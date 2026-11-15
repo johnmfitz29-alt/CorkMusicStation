@@ -17,7 +17,11 @@ Last updated 8 November 2026. Stages 3 and 4 are done locally. `site/` is built 
 - `CLAUDE.md` holds the standing rules.
 - Git is set up locally, with `source/` in `.gitignore`.
 
-**Admin area, `SPEC.md` Stage 1 (8 November 2026):** code done locally and tested, committed locally, not pushed. See "Stage 1 results" in `SPEC.md`. Waiting on the owner for `TO-APPROVE.md` and `SETUP-CHECKLIST.md`. Node.js was installed with winget to run the tests (`npm test`).
+**Admin area (9 November 2026):** Stages 1 and 2 are on the `practice` branch. Stage 3 screens are built and uncommitted, tested only on this computer. See `SPEC.md` sections 9 to 13. See "Stage 1 results" in `SPEC.md`. Waiting on the owner for `TO-APPROVE.md` and `SETUP-CHECKLIST.md`. Node.js was installed with winget to run the tests (`npm test`).
+
+**Design refresh (15 November 2026):** the owner asked for the public look to be improved freely. Same wine-red, ivory and single font, with one brass accent added. The logo sits on a music staff in the header, the on-air panel is a bright ivory sheet, and the schedule shows times first with a one-row day bar. Gallery events show a cover photo and posters sit on their own sheets. The Listen button shows moving bars while playing. No names, times or wording changed. The admin area is untouched. Uncommitted, and the screenshots in `review/` are now out of date.
+
+**Security test (15 November 2026):** see `SPEC.md` section 14. Fixes are tested on this computer and not yet on Cloudflare.
 
 ## Not finished
 
@@ -63,6 +67,8 @@ These replace anything different in the original brief above.
 - **Planned, not built:** an updating app for the station's editor, including choosing the home page photos. Those are listed in `site/data/home-photos.js`, ready for it.
 
 ## Owner's approvals for the admin area (8 November 2026)
+
+- Cloudflare's shortening of .html addresses is accepted. The old addresses redirect and still work.
 
 - All 8 posters now have last dates. Four had already passed, so they are hidden: sligo-1-copy, john-joes-dances-2026, rui-glenn-2026-copy_orig, michal-commins-nov-1-copy_orig. The picture files remain.
 - `site/data/names.js` holds the approved names list and 16 misspelling pairs.

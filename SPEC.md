@@ -237,3 +237,99 @@ Local tests: run `npm test`. Build check: run `npm run check`.
 **Noticed:** the build check warns about 8 undated posters until `TO-APPROVE.md` is answered, and about 3 MP3s of 21 to 23 MiB, which are under the 25 MiB limit.
 
 **Autoplay recheck (8 November 2026):** a Stage 1 fault was found and fixed. The date logic was on only three pages, so moving from Archives, Links, Gallery or the 404 page to the schedule, home or Gig Guide page forced a full reload, which restarts the radio. All 7 pages now load it, and a test guards this. In the browser, the stream started by itself on Archives and kept playing, with no reload, through DJ Schedule, Home and Gig Guide. Stop worked and saved its setting. Not tested: staying stopped after a full page reload (the browser pane stopped responding at that step), a browser that blocks autoplay, where "Tap anywhere to start the music" appears (that code is unchanged since the last commit), and iPhone Safari.
+
+## 10. Decisions during setup (8 November 2026)
+
+- **`.html` addresses:** Cloudflare Pages redirects `/dj-schedule.html` to `/dj-schedule`. The owner accepted this: every old address still works.
+- **Admin page:** served only through a function that checks the login first, with no plain admin file on the site. Added after `/admin%2Fupload-test` was found to get past Cloudflare Access to a static page.
+- **R80** `/admin%2F` style encoded addresses never show an admin page without a login (run against the deployed site).
+- **Order:** Stage 2 starts with Resend and the R64 measurement still open. R64 stays unproven, and `UPLOAD_TEST_ENABLED` stays set on Preview until the figures are in. So far 74 of 74 test pictures reached GitHub with no problems, at about 6.5 seconds each.
+
+## 11. Stage 2 results (8 November 2026)
+
+Tested on this computer against a stand-in GitHub (`tests/fake-github.mjs`). 76 automated tests pass. Nothing here has run on GitHub or Cloudflare yet.
+
+| Test | Result |
+|---|---|
+| R3, R13, R14, R26 undo and undo of undo | Pass locally, compared with the earlier data |
+| R24, R25 reach of 20 and unsafe entries | Pass locally |
+| R49 one commit, R48 nothing before the final step | Pass locally, including 60 photos |
+| R50 server repeats the checks | Pass locally: forged, altered, borrowed and wrong-kind receipts, undo-only steps |
+| R53 confirmation from the live file | Pass locally with a stand-in file |
+| R54 failure leaves everything unchanged | Pass locally |
+| R55 double clicks, R72 owner pushing at the same moment | Pass locally |
+| R62 one email per change | Pass locally. Resend is not set up, so no real email has been sent |
+| R63 file-limit warning | Written. Not tested at 18,000 files |
+| R31 clashes, R29 steps, R33 Late, R34 new presenter, R27 home photos | Server rules pass locally. Screens come in Stage 3 |
+| R64 free limits | **Open, with a risk.** See below |
+
+**R64 risk:** CPU per publish on this computer is about 5 ms for 1 photo, 7 ms for 12 and 18 ms for 60, against Cloudflare's free limit of 10 ms per request. Cloudflare's processors differ, so this is an indication only. It must be measured on the practice copy. If real figures are over the limit, receipts will be checked in smaller groups before the final step, which changes nothing he sees, or the go-size will be reduced.
+
+**Bug caught by the tests:** rewriting `schedule.js` was cut at a mention of its name in the opening comment, which would have broken the file. It is fixed, and every rewritten file must now read back identically before it can be saved.
+
+**Wording chosen:** noon on the public page reads "12.00 midday", matching "12.00 midnight". Section 5 had no example, so the owner may want to confirm it.
+
+**Minimum photo size:** a new gallery photo must be at least 600 pixels on its long side. The spec named a limit only for posters.
+
+## 12. Stage 2 on the real practice copy (9 November 2026)
+
+Real login, GitHub and Cloudflare, using the owner-only rehearsal, with made-up photos of about 100 KB.
+
+| Photos | Sending | Publish | Live after | Undo | Undo live after |
+|---|---|---|---|---|---|
+| 1 | 3 s | HTTP 200, 3.2 s | 35 s | HTTP 200, 3.7 s | 26 s |
+| 12 | 38 s | HTTP 200, 3.3 s | 33 s | HTTP 200, 4.0 s | 33 s |
+| 60 | 197 s | HTTP 200, 5.2 s | 33 s | HTTP 200, 3.6 s | 41 s |
+
+R3, R49, R53, R64 and R78 have now passed once on the real system for this path. R64 is not closed until the CPU figures from Cloudflare's Metrics are recorded: one successful run does not show the margin.
+
+Two faults appeared only on Cloudflare and are fixed: the build check treated every file as changed on a partial download, and a `cache` option was passed that Cloudflare may reject.
+
+## 13. Stage 3 progress (9 November 2026)
+
+**Slice 1, done on this computer:** the measuring page and its function are removed. The admin page is packed from `admin-src/` by `tools/build-admin.mjs` and served only through a login-checked function, so no plain admin file exists (R80, still to run on the deployed site). Home screen with five buttons, Undo, Get Help, the shared read-back and ending, the Practice banner, and the second-window guard work against a temporary local server with invented data (R4, R24, R25, R28, R54, R56 in part, R65, R66, R68, R69, R73 in part).
+
+**Still to build:** Add Gig Poster, Add Photos, Change Schedule, Home Page Photos, names checks, photo processing and saved drafts. Those four buttons currently say "This part isn't ready yet."
+
+`UPLOAD_TEST_ENABLED` is no longer used and can be deleted from Preview.
+
+**Slice 2, done on this computer (9 November 2026):** Add Gig Poster and take-down, tested in a browser with the real functions against the stand-in GitHub. Passed: too-small picture, a file that isn't a picture, an awkward file name, rotation, empty and past dates, last date and no end date, a resized and re-saved copy of a real poster (R10, then "They're different, keep it"), a 2-page PDF asking which page, three clicks making one commit (R55), and closing the window then "Carry on?" (R44). Not tested: a real HEIC photo, a password-protected PDF, or any of this on Cloudflare.
+
+**Duplicate check:** a 9 x 8 fingerprint could not separate copies from different posters. Replaced by a 16 x 16 brightness grid. Measured on the 8 real posters: copies differ by at most 5.4, different posters by at least 33, and the threshold is 12.
+
+PDF and HEIC libraries are in `site/assets/vendor/`, unmodified, with their licences.
+
+**Slice 3, done on this computer (9 November 2026):** name checks and Add Photos, tested in a browser with the real functions against the stand-in GitHub. Passed: script text refused, "paddy o brien" and "Hazel Tree Malow" offering the right name, "THE   MILL BAR." tidied and confirmed as new, title format, a mixed batch (too small, unreadable, a repeat in the same go, a photo already in the gallery), remove, cover, closing the window then "Carry on?", two clicks making one commit.
+
+**Known gaps for the next slice:** the public gallery does not yet show the chosen cover first (R18). There is no screen yet for taking down photos or albums (R13, R14), though the server side passes. 60 photos at once, a real HEIC photo and Cloudflare are untested through these screens. Checking against the existing gallery took about 15 seconds locally and will take longer on a slow connection.
+
+Owner confirmed already-hidden posters stay in the take-down list, marked as hidden.
+
+**Slice 4, done on this computer (9 November 2026), completing the Stage 3 screens:** the public gallery shows the chosen cover first (R18), and these were tested in a browser with the real functions against the stand-in GitHub: taking down photos and whole events with the photo count (R14), the home-page guard, Change Schedule with every-week and one-date changes, a wrong-weekday date, the clash message and nearest free time (R31), adding a show for a known and a brand-new presenter with a photo (R34), past-midnight wording (R30), Home Page Photos with its minimum of 3 (R27), and closing the window at the read-back (R44).
+
+**Stage 3 is not signed off.** None of these screens has run on Cloudflare. Not tested: a real HEIC photo, a password-protected PDF, 60 real photos through these screens, signing in again after the login expires (R79), a second window (R56), and the "Late" option through the screen. A window closed before the read-back of a schedule or home-photo change loses those few taps. Time lists have up to 96 entries, which needs watching when he tries it (R74).
+
+## 14. Security test (15 November 2026)
+
+The owner asked for the site to be attacked in every way possible. Tested: the live address from outside (25 path and method tricks, exposed files, headers), the admin functions on this computer against the stand-in GitHub (cross-site requests, oversized bodies, forged logins, path escapes, script and disguised text in names, odd step types, a picture with a web page hidden inside), the public pages' code, GitHub's protections, and the whole git history for secrets. Cloudflare's and GitHub's own login systems were not attacked.
+
+**Found and fixed**
+
+| Flaw | Fix |
+|---|---|
+| Another website could make a signed-in editor's browser send changes (cross-site request forgery). A poster was taken down this way in testing | Every function now refuses any change that does not come from this site's own pages |
+| No browser protections on public or admin pages, which share one address, so any injected script on a public page could act as a signed-in editor | `site/_headers` and the admin function now send a strict Content-Security-Policy (no inline or outside scripts), plus frame, sniffing and HTTPS headers. Inline styles were removed so the policy has no exceptions |
+| A flood of made-up key IDs made the login check download Cloudflare's keys every time | At most one download a minute |
+| Request bodies were read in full before their size was checked | Bodies are cut off at their limit as they arrive |
+| Names could carry invisible or direction-flipping characters to disguise text | Refused by the functions and the build check |
+| Page swapping would parse any same-site file as a page | Only real pages are swapped in |
+| Smaller hardening | Step names looked up safely, single quotes escaped, the PDF reader never builds code from text, and the local preview no longer serves sibling folders |
+
+**Held without changes:** every login bypass tried on the live address, forged and altered login tokens, writing outside the data and image folders, script in names, undo-only steps from the browser, forged or reused receipts. GitHub blocks force-pushes and deletion on `main` and `practice` with no bypass, and no secret is in the history.
+
+**Accepted, with the reason**
+- A picture file can carry other bytes after a valid header. Only a signed-in editor can send one, and browsers are told never to treat it as a page or script.
+- Apostrophes are allowed in names, as in O'Brien. They are escaped on the page.
+- A signed-in editor can send many Get Help emails. Only the two allowed people can sign in.
+
+**Not tested:** the radio stream under the new headers, because the station returned "unavailable" (503) during the test. The policy allows audio from any address and no block was reported. These fixes have not run on Cloudflare.

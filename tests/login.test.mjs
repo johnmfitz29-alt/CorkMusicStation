@@ -90,14 +90,23 @@ test("certificate outage refuses, and does not let anyone in", async () => {
   assert.equal((await requireLogin(ctx(await sign(goodClaims())), down)).status, 401);
 });
 
-test("keys are cached, and an unknown key forces a refresh", async () => {
+test("keys are cached, and an unknown key forces a refresh at most once a minute", async () => {
   clearKeyCache();
   certCalls = 0;
   const token = await sign(goodClaims());
   await requireLogin(ctx(token), fetcher);
   await requireLogin(ctx(token), fetcher);
   assert.equal(certCalls, 1);
-  await requireLogin(ctx(await sign(goodClaims(), { header: { alg: "RS256", kid: "new" } })), fetcher);
+  const unknown = await sign(goodClaims(), { header: { alg: "RS256", kid: "new" } });
+  await requireLogin(ctx(unknown), fetcher);
+  assert.equal(certCalls, 1, "not again within the minute");
+  const realNow = Date.now;
+  Date.now = () => realNow() + 61000;
+  try {
+    await requireLogin(ctx(unknown), fetcher);
+  } finally {
+    Date.now = realNow;
+  }
   assert.equal(certCalls, 2);
 });
 
@@ -112,7 +121,7 @@ function handlers(dir) {
 }
 
 test("every handler checks the login first (R59)", () => {
-  const files = handlers(path.join(root, "functions/api"));
+  const files = [...handlers(path.join(root, "functions/api")), ...handlers(path.join(root, "functions/admin"))];
   assert.ok(files.length > 0);
   for (const file of files) {
     const text = fs.readFileSync(file, "utf8");

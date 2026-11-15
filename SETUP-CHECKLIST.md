@@ -66,3 +66,22 @@ Those results are acceptance test R58.
 
 - [ ] Create a free Resend account and verify the domain you'll send from.
 - [ ] Create an API key that can only send. Add it as `RESEND_API_KEY`, a **secret**, in step C's screen. Add `OWNER_EMAIL` the same way.
+
+## G. Settings for publishing (Stage 2)
+
+Add these in Settings → Variables and Secrets, then redeploy.
+
+| Name | Type | Production | Preview |
+|---|---|---|---|
+| `PUBLISH_BRANCH` | Text | `main` | `practice` |
+| `RECEIPT_KEY` | Secret | A long random value | A different long random value |
+
+With Resend (section F), also add `ALERT_FROM`, the address alerts are sent from, as Text.
+
+## H. Extra protections worth switching on (from the security test)
+
+- [ ] GitHub → repository Settings → Actions → General → **Disable actions**. Nothing here uses them, and it removes a way for a leaked token to run code.
+- [ ] GitHub → Settings → General → untick **Wikis** and **Allow forking** if you do not need them.
+- [ ] GitHub → your account → Password and authentication → turn on **two-factor authentication**. Do the same for Cloudflare and for both Google accounts on the allow-list.
+- [ ] Cloudflare → Zero Trust → the two Access applications → Cookie settings → set **SameSite** to **Strict** and tick **HTTP Only**.
+- [ ] After each merge to `main`, check that `https://cork-music-station.pages.dev/` sends a `content-security-policy` header, and that the radio still plays.
