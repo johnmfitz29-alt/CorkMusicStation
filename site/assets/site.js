@@ -5,8 +5,8 @@
 
   function el(id) { return document.getElementById(id); }
   function esc(s) {
-    return String(s).replace(/[&<>"]/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
   function emailLink() {
@@ -135,7 +135,7 @@
         '<p class="time">' + esc(s.time) + "</p>" +
         '<p class="name">' + esc(s.presenter) + (s.repeat ? '<span class="tag">Repeat</span>' : "") + "</p>" +
         (s.show ? "<p>" + esc(s.show) + "</p>" : "") + "</div></div>";
-    }).join("") + '<p style="margin-top:14px"><a href="dj-schedule.html">See the full schedule</a></p>';
+    }).join("") + '<p class="after-list"><a href="dj-schedule.html">See the full schedule</a></p>';
   }
 
   function renderSchedule() {
@@ -313,7 +313,11 @@
     });
   }
   function go(url, push) {
-    return fetch(url).then(function (r) { return r.text(); }).then(function (text) {
+    return fetch(url).then(function (r) {
+      /* Only a real page from this site may be swapped in, never a picture or other file. */
+      if (!r.ok || !/^text\/html\b/.test(r.headers.get("content-type") || "")) throw new Error("Not a page");
+      return r.text();
+    }).then(function (text) {
       var doc = new DOMParser().parseFromString(text, "text/html");
       var fresh = doc.querySelector("main");
       if (!fresh) throw new Error("No page content");

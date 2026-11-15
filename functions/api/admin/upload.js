@@ -1,6 +1,7 @@
 // Takes one picture, already prepared in the browser, checks it, and stores it where it stays invisible until published.
 
 import { requireLogin } from "../../_lib/auth.js";
+import { readText } from "../../_lib/body.js";
 import { reply, validChangeId } from "../../_lib/change.js";
 import { inspectJpegBase64 } from "../../_lib/jpeg.js";
 import { signReceipt } from "../../_lib/receipts.js";
@@ -20,9 +21,8 @@ export async function onRequestPost(context) {
   const change = url.searchParams.get("change");
   if (!Object.hasOwn(LIMITS, kind || "") || !validChangeId(change)) return reply(400, { ok: false, code: "bad_request" });
 
-  if (Number(request.headers.get("content-length") || 0) > MAX_BASE64) return reply(413, { ok: false, code: "too_big" });
-  const data = await request.text();
-  if (data.length > MAX_BASE64) return reply(413, { ok: false, code: "too_big" });
+  const data = await readText(request, MAX_BASE64);
+  if (data === null) return reply(413, { ok: false, code: "too_big" });
 
   const jpeg = inspectJpegBase64(data);
   if (!jpeg.ok) return reply(422, { ok: false, code: jpeg.code });

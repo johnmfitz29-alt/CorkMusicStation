@@ -1,0 +1,10 @@
+# Browser protections for every public page and file. Cloudflare Pages reads this file.
+# Scripts and styles may only come from this site, so injected code cannot run.
+# The live stream can come from any address, because the radio provider redirects between its servers.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' https: http:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000

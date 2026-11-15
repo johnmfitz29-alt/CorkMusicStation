@@ -1,6 +1,7 @@
 // Puts one finished change on the website as a single commit.
 
 import { requireLogin } from "../../_lib/auth.js";
+import { readText } from "../../_lib/body.js";
 import { reply, runChange } from "../../_lib/change.js";
 
 const MAX_BODY = 256 * 1024;
@@ -11,11 +12,10 @@ export async function onRequestPost(context) {
   if (login instanceof Response) return login;
 
   const { request, env } = context;
-  if (Number(request.headers.get("content-length") || 0) > MAX_BODY) return reply(413, { ok: false, code: "too_big" });
+  const text = await readText(request, MAX_BODY);
+  if (text === null) return reply(413, { ok: false, code: "too_big" });
   let body;
   try {
-    const text = await request.text();
-    if (text.length > MAX_BODY) return reply(413, { ok: false, code: "too_big" });
     body = JSON.parse(text);
   } catch {
     return reply(400, { ok: false, code: "bad_request" });

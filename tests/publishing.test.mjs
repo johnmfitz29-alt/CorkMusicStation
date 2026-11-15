@@ -33,7 +33,7 @@ const schedule = () => data("schedule.js", "SCHEDULE");
 const posters = () => data("posters.js", "POSTERS");
 const gallery = () => data("gallery.js", "GALLERY");
 const home = () => data("home-photos.js", "HOME_PHOTOS");
-const headers = () => ({ "Cf-Access-Jwt-Assertion": auth });
+const headers = () => ({ "Cf-Access-Jwt-Assertion": auth, Origin: "https://x.test" });
 const post = (handler, url, body) => handler({ env, request: new Request(`https://x.test${url}`, { method: "POST", headers: headers(), body }) });
 const send = async (handler, path, value) => {
   const r = await post(handler, path, JSON.stringify(value));

@@ -77,3 +77,11 @@ Add these in Settings → Variables and Secrets, then redeploy.
 | `RECEIPT_KEY` | Secret | A long random value | A different long random value |
 
 With Resend (section F), also add `ALERT_FROM`, the address alerts are sent from, as Text.
+
+## H. Extra protections worth switching on (from the security test)
+
+- [ ] GitHub → repository Settings → Actions → General → **Disable actions**. Nothing here uses them, and it removes a way for a leaked token to run code.
+- [ ] GitHub → Settings → General → untick **Wikis** and **Allow forking** if you do not need them.
+- [ ] GitHub → your account → Password and authentication → turn on **two-factor authentication**. Do the same for Cloudflare and for both Google accounts on the allow-list.
+- [ ] Cloudflare → Zero Trust → the two Access applications → Cookie settings → set **SameSite** to **Strict** and tick **HTTP Only**.
+- [ ] After each merge to `main`, check that `https://cork-music-station.pages.dev/` sends a `content-security-policy` header, and that the radio still plays.

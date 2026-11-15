@@ -308,3 +308,28 @@ Owner confirmed already-hidden posters stay in the take-down list, marked as hid
 **Slice 4, done on this computer (9 November 2026), completing the Stage 3 screens:** the public gallery shows the chosen cover first (R18), and these were tested in a browser with the real functions against the stand-in GitHub: taking down photos and whole events with the photo count (R14), the home-page guard, Change Schedule with every-week and one-date changes, a wrong-weekday date, the clash message and nearest free time (R31), adding a show for a known and a brand-new presenter with a photo (R34), past-midnight wording (R30), Home Page Photos with its minimum of 3 (R27), and closing the window at the read-back (R44).
 
 **Stage 3 is not signed off.** None of these screens has run on Cloudflare. Not tested: a real HEIC photo, a password-protected PDF, 60 real photos through these screens, signing in again after the login expires (R79), a second window (R56), and the "Late" option through the screen. A window closed before the read-back of a schedule or home-photo change loses those few taps. Time lists have up to 96 entries, which needs watching when he tries it (R74).
+
+## 14. Security test (15 November 2026)
+
+The owner asked for the site to be attacked in every way possible. Tested: the live address from outside (25 path and method tricks, exposed files, headers), the admin functions on this computer against the stand-in GitHub (cross-site requests, oversized bodies, forged logins, path escapes, script and disguised text in names, odd step types, a picture with a web page hidden inside), the public pages' code, GitHub's protections, and the whole git history for secrets. Cloudflare's and GitHub's own login systems were not attacked.
+
+**Found and fixed**
+
+| Flaw | Fix |
+|---|---|
+| Another website could make a signed-in editor's browser send changes (cross-site request forgery). A poster was taken down this way in testing | Every function now refuses any change that does not come from this site's own pages |
+| No browser protections on public or admin pages, which share one address, so any injected script on a public page could act as a signed-in editor | `site/_headers` and the admin function now send a strict Content-Security-Policy (no inline or outside scripts), plus frame, sniffing and HTTPS headers. Inline styles were removed so the policy has no exceptions |
+| A flood of made-up key IDs made the login check download Cloudflare's keys every time | At most one download a minute |
+| Request bodies were read in full before their size was checked | Bodies are cut off at their limit as they arrive |
+| Names could carry invisible or direction-flipping characters to disguise text | Refused by the functions and the build check |
+| Page swapping would parse any same-site file as a page | Only real pages are swapped in |
+| Smaller hardening | Step names looked up safely, single quotes escaped, the PDF reader never builds code from text, and the local preview no longer serves sibling folders |
+
+**Held without changes:** every login bypass tried on the live address, forged and altered login tokens, writing outside the data and image folders, script in names, undo-only steps from the browser, forged or reused receipts. GitHub blocks force-pushes and deletion on `main` and `practice` with no bypass, and no secret is in the history.
+
+**Accepted, with the reason**
+- A picture file can carry other bytes after a valid header. Only a signed-in editor can send one, and browsers are told never to treat it as a page or script.
+- Apostrophes are allowed in names, as in O'Brien. They are escaped on the page.
+- A signed-in editor can send many Get Help emails. Only the two allowed people can sign in.
+
+**Not tested:** the radio stream under the new headers, because the station returned "unavailable" (503) during the test. The policy allows audio from any address and no block was reported. These fixes have not run on Cloudflare.

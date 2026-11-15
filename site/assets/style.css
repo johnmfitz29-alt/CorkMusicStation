@@ -84,6 +84,7 @@ main { padding: 26px 0 48px; }
 .btn { font-size: 1.15rem; font-weight: 700; line-height: 1.2; min-height: 58px; padding: 10px 22px; background: var(--ivory); color: var(--on-ivory); border: 0; border-radius: var(--r-btn); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
 .btn:hover { background: var(--white); color: var(--on-ivory); }
 .time { font-weight: 700; color: var(--brass); }
+.after-list { margin-top: 14px; }
 
 /* On air: the brightest thing on the page */
 .onair { background: var(--paper); color: var(--ink); border-radius: var(--r-panel); overflow: hidden; display: grid; grid-template-columns: 1fr; box-shadow: 0 12px 28px rgba(20, 4, 8, .4); }

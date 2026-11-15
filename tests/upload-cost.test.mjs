@@ -16,7 +16,7 @@ test.beforeEach(async () => { clearKeyCache(); gh = new FakeGitHub(); gh.install
 test.afterEach(() => gh.uninstall());
 const call = (data = image) => onRequestPost({
   env: ENV,
-  request: new Request("https://x.test/api/admin/upload?kind=photo&change=change-000000000000", { method: "POST", headers: { "Cf-Access-Jwt-Assertion": auth }, body: data }),
+  request: new Request("https://x.test/api/admin/upload?kind=photo&change=change-000000000000", { method: "POST", headers: { "Cf-Access-Jwt-Assertion": auth, Origin: "https://x.test" }, body: data }),
 });
 
 test("oversized body is refused (section 4)", async () => {
