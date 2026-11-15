@@ -509,3 +509,69 @@ test("a full 60-photo publish, CPU indication on this computer (R64)", async () 
   assert.equal(r.status, 200);
   console.log(`local CPU for a 60-photo publish: ${((used.user + used.system) / 1000).toFixed(1)} ms, including the stand-in GitHub`);
 });
+
+const presenterFiles = () => [...gh.filesAt().keys()].filter((p) => p.startsWith("site/images/presenters/")).sort();
+
+test("undoing a new presenter's show removes the photo it brought, and redo puts it back", async () => {
+  for (const make of [
+    (image) => ({ op: "weeklyAdd", day: "Monday", presenter: "New Person", start: "09:00", end: "10:00", image }),
+    (image) => ({ op: "oneOffAdd", date: FUTURE, presenter: "New Person", start: "09:00", end: "10:00", image }),
+  ]) {
+    const filesBefore = presenterFiles();
+    const dataBefore = JSON.stringify(schedule());
+    const c = newId();
+    assert.equal((await go(c, [make(await picture("presenter", c, 400, 400))])).status, 200);
+    const added = presenterFiles().filter((p) => !filesBefore.includes(p));
+    assert.equal(added.length, 1);
+    const withShow = JSON.stringify(schedule());
+
+    const u = newId();
+    assert.equal((await undoIt(c, u)).status, 200);
+    assert.deepEqual(presenterFiles(), filesBefore, "the photo is gone");
+    assert.equal(JSON.stringify(schedule()), dataBefore);
+
+    assert.equal((await undoIt(u)).status, 200);
+    assert.ok(gh.filesAt().has(added[0]), "the photo is back");
+    assert.equal(JSON.stringify(schedule()), withShow);
+    gh = new (await import("./fake-github.mjs")).FakeGitHub();
+    gh.uninstall?.();
+    gh.install();
+  }
+});
+
+test("a brought-in photo stays if another show has started using it", async () => {
+  const c = newId();
+  await go(c, [{ op: "weeklyAdd", day: "Monday", presenter: "New Person", start: "09:00", end: "10:00", image: await picture("presenter", c, 400, 400) }]);
+  const photo = schedule().weekly[0].shows[0].photo;
+  assert.equal((await go(newId(), [{ op: "weeklyAdd", day: "Tuesday", presenter: "New Person", start: "09:00", end: "10:00", photo }])).status, 200);
+  assert.equal((await undoIt(c)).status, 200);
+  assert.ok(gh.filesAt().has(`site/${photo}`), "still used on Tuesday, so kept");
+});
+
+test("undoing a show for an existing presenter never removes a station photo", async () => {
+  const before = presenterFiles();
+  const c = newId();
+  await go(c, [{ op: "weeklyAdd", day: "Friday", presenter: "David Marks", start: "10:00", end: "11:00", photo: "images/presenters/davidmarks-pic.jpg" }]);
+  assert.equal((await undoIt(c)).status, 200);
+  assert.deepEqual(presenterFiles(), before);
+  const off = newId();
+  await go(off, [{ op: "weeklyOff", showId: "sat-david-marks-1100" }]);
+  assert.deepEqual(presenterFiles(), before, "taking a show off keeps the presenter's photo");
+  assert.equal((await undoIt(off)).status, 200);
+});
+
+test("a show is not put back if its photo is no longer on the site", async () => {
+  const c = newId();
+  await go(c, [{ op: "oneOffAdd", date: FUTURE, presenter: "New Person", start: "09:00", end: "10:00", image: await picture("presenter", c, 400, 400) }]);
+  const photo = schedule().oneOffs[0].show.photo;
+  const u = newId();
+  await undoIt(c, u);
+  // The owner tidies the file's record away by hand, as with photos left by earlier versions.
+  const log = gh.text("site/data/change-log.js").replace(/"shas":{[^}]*}/, '"shas":{}');
+  gh.outsidePush("site/data/change-log.js", log);
+  const before = gh.head;
+  const r = await undoIt(u);
+  assert.equal(r.code, "not_safe_to_undo");
+  assert.equal(gh.head, before);
+  assert.ok(!gh.filesAt().has(`site/${photo}`));
+});

@@ -391,3 +391,11 @@ The on-air panel shows "Now playing:" with the title and artist, read every 20 s
 - The text is shown exactly as the playout system sends it, as plain text, cut at 120 characters. Hostile text in the feed was tried and did not run.
 - The line is hidden when there is no title, when the feed has been unreachable for 90 seconds, or when the title is only a placeholder such as "Track 6" or "Untitled". "Unknown Artist" is dropped and the title kept.
 - Tested in a browser with the security rules applied, at phone and desktop widths, against the real feed. Not yet run on Cloudflare.
+
+## 20. Undo removes a presenter photo it brought in (15 November 2026)
+
+Found on the live site: adding a show for a new presenter and then undoing it removed the show but left the photo file, reachable by its address. Now the undo removes the photo too, unless another show has started using it, and undoing the undo puts it back. Only photos with a generated name can be removed this way. The station's own presenter photos still cannot be removed by the admin area.
+
+A show is no longer put back if its photo is missing from the site and cannot be restored with it, which would have broken the next build. The leftover photo from the live test was removed, so the "undid: added F" entry can no longer be re-done, and says so safely if tried.
+
+Tested against the stand-in GitHub for weekly and one-date shows, including redo, a photo shared with another show, and existing presenters. Not yet run on Cloudflare.

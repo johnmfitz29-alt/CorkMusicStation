@@ -7,6 +7,7 @@ import { DAYS, dateClash, hhmm, irishToday, mins, realDate, timeText, validTimes
 const MAX_PHOTOS = 60;
 const MIN_HOME = 3;
 const DEFAULT_CONTACT = "For Requests Email {email}";
+const ADDED_PRESENTER_PHOTO = /^images\/presenters\/[0-9a-f]{16}(-[a-z0-9-]+)?\.jpg$/;
 
 export class Refusal extends Error {
   constructor(code, detail) {
@@ -109,6 +110,18 @@ export function applyOps(state, ops, ctx) {
     for (const [file, sha] of Object.entries(shas || {})) {
       images.push({ path: site(file), sha, action: "create" });
     }
+  }
+
+  // A presenter photo that a change brought in goes again when that change is undone, unless
+  // another show has started using it. Only generated names qualify, never the station's own photos.
+  const droppable = (file) => (typeof file === "string" && ADDED_PRESENTER_PHOTO.test(file) ? [file] : []);
+
+  // Putting a show back is refused if its photo is no longer on the site and cannot be put back with it.
+  function needPhoto(show) {
+    const path = site(show.photo);
+    const coming = images.some((i) => i.path === path && i.action === "create");
+    const going = images.some((i) => i.path === path && i.action === "delete");
+    if (coming ? false : going || !tree.has(path)) refuse("not_safe_to_undo", show.photo);
   }
 
   const album = (title) => state.gallery.find((a) => a.title === title) || refuse("no_such_album", title);
@@ -314,14 +327,16 @@ export function applyOps(state, ops, ctx) {
         day.shows.push(op.show);
         sortDay(day);
         checkWeek();
-        undo.unshift({ op: "_showRemove", showId: op.show.id });
+        restoreFiles(op.shas);
+        needPhoto(op.show);
+        undo.unshift({ op: "_showRemove", showId: op.show.id, dropPhoto: op.dropPhoto });
         touched.add(`show:${op.show.id}`);
         break;
       }
       case "_showRemove": {
         const found = findShow(op.showId);
         found.day.shows.splice(found.i, 1);
-        undo.unshift({ op: "_showRestore", day: DAYS[found.d], show: found.show });
+        undo.unshift({ op: "_showRestore", day: DAYS[found.d], show: found.show, shas: deleteFiles(droppable(op.dropPhoto)), dropPhoto: op.dropPhoto });
         touched.add(`show:${op.showId}`);
         break;
       }
@@ -335,7 +350,7 @@ export function applyOps(state, ops, ctx) {
         state.schedule.weekly[d].shows.push(show);
         sortDay(state.schedule.weekly[d]);
         checkWeek();
-        undo.unshift({ op: "_showRemove", showId: id });
+        undo.unshift({ op: "_showRemove", showId: id, dropPhoto: op.image ? show.photo : undefined });
         touched.add(`show:${id}`);
         break;
       }
@@ -361,7 +376,7 @@ export function applyOps(state, ops, ctx) {
         const entry = { id, date: op.date, type: "add", show: newShow(op, `add-${id}`) };
         state.schedule.oneOffs.push(entry);
         checkDate(op.date);
-        undo.unshift({ op: "_oneOffRemove", id });
+        undo.unshift({ op: "_oneOffRemove", id, dropPhoto: op.image ? entry.show.photo : undefined });
         touched.add(`oneoff:${id}`);
         break;
       }
@@ -369,14 +384,16 @@ export function applyOps(state, ops, ctx) {
         const index = state.schedule.oneOffs.findIndex((o) => o.id === op.id);
         if (index < 0) refuse("no_such_change", op.id);
         const [entry] = state.schedule.oneOffs.splice(index, 1);
-        undo.unshift({ op: "_oneOffRestore", entry, index });
+        undo.unshift({ op: "_oneOffRestore", entry, index, shas: deleteFiles(droppable(op.dropPhoto)), dropPhoto: op.dropPhoto });
         touched.add(`oneoff:${op.id}`);
         break;
       }
       case "_oneOffRestore": {
         state.schedule.oneOffs.splice(Math.min(op.index, state.schedule.oneOffs.length), 0, op.entry);
         checkDate(op.entry.date);
-        undo.unshift({ op: "_oneOffRemove", id: op.entry.id });
+        restoreFiles(op.shas);
+        if (op.entry.show) needPhoto(op.entry.show);
+        undo.unshift({ op: "_oneOffRemove", id: op.entry.id, dropPhoto: op.dropPhoto });
         touched.add(`oneoff:${op.entry.id}`);
         break;
       }
