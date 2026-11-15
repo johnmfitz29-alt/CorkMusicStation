@@ -11,6 +11,12 @@ const ATTEMPTS = 4;
 const LOG_KEEP = 40;
 export const UNDO_REACH = 20;
 const FILE_WARN = 18000;
+// Each change is one build, and the host allows 500 a month. These limits stop a stuck page or a
+// stolen login from using them up, or from making changes faster than the owner can react.
+const BURST_MAX = 10;
+const BURST_MS = 10 * 60 * 1000;
+const DAY_MAX = LOG_KEEP;
+const DAY_MS = 24 * 60 * 60 * 1000;
 const ID = /^[a-z0-9-]{16,64}$/;
 
 const FILES = {
@@ -72,6 +78,10 @@ export async function runChange({ env, changeId, makeOps, summaryFor, who, allow
       const log = await readLog(api, head);
       if (log.some((e) => e.id === changeId)) return reply(200, { ok: true, changeId, already: true });
 
+      const now = Date.now();
+      const since = (ms) => log.filter((e) => now - Date.parse(e.at) < ms).length;
+      if (since(BURST_MS) >= BURST_MAX || since(DAY_MS) >= DAY_MAX) return reply(429, { ok: false, code: "busy" });
+
       const ops = makeOps(log);
       const receipts = await verifyReceipts(env, ops);
       const baseTree = await api.treeOf(head);
@@ -109,7 +119,7 @@ export async function runChange({ env, changeId, makeOps, summaryFor, who, allow
       }
 
       const summary = summaryFor ? summaryFor(ops, log) : describe(ops);
-      const entry = { id: changeId, at: new Date().toISOString(), summary, touched, undo };
+      const entry = { id: changeId, at: new Date(Date.now()).toISOString(), summary, touched, undo };
       const logText = `/* The record behind Undo. Written only by the admin area. */\nwindow.CHANGE_LOG = ${lines([entry, ...log].slice(0, LOG_KEEP))};\n`;
       add(LOG_PATH, "update", { content: logText });
       add(VERSION_PATH, "update", { content: `${JSON.stringify({ id: changeId })}\n` });

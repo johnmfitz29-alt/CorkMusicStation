@@ -55,6 +55,8 @@ Open `site/data/config.js` and put the address between the quotes on the `stream
 streamUrl: "https://your-stream-address-here",
 ```
 
+The line below it, `nowPlayingUrl`, is where the site reads the song that is playing. If the stream moves to a different provider, put nothing between its quotes, and ask for the security rules in `site/_headers` to be updated before using a new address.
+
 It must start with `https://`. Until it is filled in, Listen live says the stream has not been added yet. The email address and station name are in the same file.
 
 The radio tries to start when the site opens. Most browsers wait for the visitor's first tap before allowing sound. To make it wait for Listen live instead, change `autoplay: true` to `autoplay: false`.

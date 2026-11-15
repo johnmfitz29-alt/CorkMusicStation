@@ -333,3 +333,61 @@ The owner asked for the site to be attacked in every way possible. Tested: the l
 - A signed-in editor can send many Get Help emails. Only the two allowed people can sign in.
 
 **Not tested:** the radio stream under the new headers, because the station returned "unavailable" (503) during the test. The policy allows audio from any address and no block was reported. These fixes have not run on Cloudflare.
+
+## 15. Live address check after merge (15 November 2026)
+
+Run from outside against https://cork-music-station.pages.dev/ with no login.
+
+- **R58, R80 pass:** `/admin` and every `/api/admin/*` address sends visitors to the Cloudflare login, including capital letters and `./` tricks. The encoded forms (`/admin%2f…`) now return 404, so the old measuring page can no longer be reached, and encoded function paths return 405 with nothing behind them.
+- **Public pages:** all 6 pages, the names list and the vendor files return 200. Old `.html` addresses redirect and load.
+- **Headers:** Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy and Strict-Transport-Security are all sent.
+- **Radio:** plays on the live address in two browsers. An earlier failure was a stale cached copy of the page.
+- **Not yet checked:** a real change made on the live address (step 7), alert emails (Resend), and the custom domain.
+
+## 16. Domain moved to Cloudflare (15 November 2026)
+
+`corkmusicstation.com` now uses Cloudflare's nameservers (`lennox` and `reza`). The registration stays with Network Solutions (FatCow's parent), with the transfer lock switched on. DNSSEC was off. Nobody uses a mailbox on the domain, but the mail records were copied across as DNS only. Seven FatCow service addresses (such as `mail.` and `ftp.`) were not copied, because nothing uses them.
+
+Tested from outside on both `corkmusicstation.com` and `www.corkmusicstation.com`:
+- Both serve the new site over HTTPS with valid certificates, and plain http redirects to https.
+- `/admin` and every `/api/admin/*` address send visitors to the Cloudflare login, including capitals and `./` tricks. Encoded forms return 404 or 405.
+- All 6 public pages load, the 404 page works, and the old `.html` addresses redirect and load.
+- All six protection headers are sent.
+
+**Not yet done:** Resend alert emails, the account protections in section H of the checklist, and closing the old FatCow hosting (wait a few weeks, and make sure it does not cancel the domain registration).
+
+## 17. Alert emails working (15 November 2026)
+
+Resend is set up with `corkmusicstation.com` verified, a DMARC record added, and a send-only key in Cloudflare secrets (`RESEND_API_KEY`, `OWNER_EMAIL`, `ALERT_FROM`) for Production and Preview. The owner confirmed Get Help emails arrive from the live site and from the practice copy, where the subject starts "[Practice]". R5 and R62 now pass on the real system.
+
+## 18. Second security test, on the live domain (15 November 2026)
+
+**Tried from outside, all refused:** 31 more path tricks on `/admin` and the functions (double encoding, backslashes, tabs, dots, semicolons), a forged login on every address that did not redirect, other ports (8443, 2053, 8080, 8880), a trailing-dot hostname, old deployment addresses, and TLS 1.0 and 1.1. Every protection header is sent on pages, pictures, data files and the 404 page. Visitors get no cookies. No secret or personal address is in the repository. The earlier attack set still fails on the live code.
+
+**Found**
+
+| Finding | Risk | Where it is fixed |
+|---|---|---|
+| A leftover `_acme-challenge` record lets the old host obtain certificates for the domain | Someone at, or breaking into, the old host could impersonate the site | Checklist section I, owner's action |
+| No DMARC record, and the SPF record still lists the old host and ends `?all` | Anyone can send email that appears to come from the domain | Checklist section I, owner's action |
+| Mail records still point at the old host | Mail to the domain goes to mailboxes nobody reads | Checklist section I, owner's action |
+| No limit on how fast changes can be made. Each one is a build, and the host allows 500 a month | A stolen login or a stuck page could use up the month's builds, or vandalise faster than Undo can follow | Fixed in code: at most 10 changes in 10 minutes and 40 in a day |
+| Look-alike spaces and non-standard letter forms were accepted in names | Two events or presenters could be made to look identical | Fixed in code |
+| Pages could be controlled by a window another site opened | Low | Fixed in code with a Cross-Origin-Opener-Policy header |
+| Cloudflare's analytics script is injected and then blocked | No risk, but a warning in every visitor's browser console | Checklist section I, owner's action |
+| DNSSEC is off | Low. Forged DNS answers are possible in principle | Checklist section I, after the registrar move |
+
+**Open question:** GitHub shows no change made through the admin area on `main`, and the live site has no change log. So no real change has yet been recorded on the live site, although the owner reported that the step 7 test worked. Until one is seen, R53 and R62 are unproven on the live address for real changes.
+
+**Not tested:** anything behind the login on the live site, because Claude has no login. The code fixes in this section have not run on Cloudflare.
+
+**Update, 15 November 2026, 19:30:** the owner's actions in checklist section I are done and confirmed from outside. The `_acme-challenge` record, the old mail records and the merged branch are gone, SPF is `v=spf1 -all`, DMARC is `p=quarantine`, Resend's records are intact, the analytics script is no longer added, and Get Help still arrives. The open question is closed: GitHub now shows two changes made through the live admin area on `main` (a one-date show added, then undone), so a real change and its Undo are proven on the live address. Still to do: DMARC to `p=reject` in a week, DNSSEC after the registrar move, and the code fixes in this section, which are not yet live.
+
+## 19. Song that is playing (15 November 2026)
+
+The on-air panel shows "Now playing:" with the title and artist, read every 20 seconds from the radio provider's public feed (`nowPlayingUrl` in `site/data/config.js`). Nothing is asked of the station's editor.
+
+- The security rules now let pages read from `https://www.radiojar.com` and nowhere else outside this site.
+- The text is shown exactly as the playout system sends it, as plain text, cut at 120 characters. Hostile text in the feed was tried and did not run.
+- The line is hidden when there is no title, when the feed has been unreachable for 90 seconds, or when the title is only a placeholder such as "Track 6" or "Untitled". "Unknown Artist" is dropped and the title kept.
+- Tested in a browser with the security rules applied, at phone and desktop widths, against the real feed. Not yet run on Cloudflare.

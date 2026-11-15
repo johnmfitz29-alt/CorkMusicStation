@@ -85,3 +85,48 @@ With Resend (section F), also add `ALERT_FROM`, the address alerts are sent from
 - [ ] GitHub → your account → Password and authentication → turn on **two-factor authentication**. Do the same for Cloudflare and for both Google accounts on the allow-list.
 - [ ] Cloudflare → Zero Trust → the two Access applications → Cookie settings → set **SameSite** to **Strict** and tick **HTTP Only**.
 - [ ] After each merge to `main`, check that `https://cork-music-station.pages.dev/` sends a `content-security-policy` header, and that the radio still plays.
+
+## I. After launch: email records and leftovers (from the second security test)
+
+All in Cloudflare → `corkmusicstation.com` → **DNS → Records**, unless it says otherwise. Nobody uses a mailbox on the domain, so these are safe. Do them in this order.
+
+**1. Remove a record that lets the old host get security certificates for your domain**
+
+| Type | Name | Action |
+|---|---|---|
+| CNAME | `_acme-challenge` | Delete |
+
+**2. Stop other people sending email that claims to come from your domain**
+
+| Type | Name | Content | Action |
+|---|---|---|---|
+| TXT | `@` (the one starting `v=spf1 ip4:38.113…`) | `v=spf1 -all` | Edit |
+| TXT | `_dmarc` | `v=DMARC1; p=quarantine;` | Add |
+
+Then press **Get Help** in the admin area and check the alert still arrives in your inbox, not in spam. If it does, change `p=quarantine` to `p=reject` a week later. If it stops arriving, change the `_dmarc` record to `v=DMARC1; p=none;` and tell Claude.
+
+**3. Remove the old host's mail leftovers**
+
+| Type | Name | Action |
+|---|---|---|
+| MX | `@` → `mx.corkmusicstation.com` | Delete |
+| A | `mx` (six records) | Delete |
+| CNAME | `webmail` | Delete |
+| CNAME | `dkim._domainkey` | Delete |
+
+Leave everything Resend added (`resend._domainkey`, `send` and `rsend`), and the two records for the website.
+
+**4. Other switches**
+- [ ] **Web Analytics off:** Workers & Pages → cork-music-station → Metrics → Web Analytics → disable. The site's protections block its script anyway, which only fills visitors' browsers with warnings.
+- [ ] **DNSSEC:** easiest after the registration moves to Cloudflare, where it is one click under DNS → Settings. Before that it needs a record typed in at Network Solutions.
+- [ ] **SSL/TLS → Edge Certificates:** check **Always Use HTTPS** is on and **Minimum TLS Version** is 1.2. Both tested as working that way on 15 November 2026.
+- [ ] **GitHub:** delete the merged branch `admin-area-and-new-look`.
+
+## J. If a computer, phone or account is lost or stolen
+
+1. **Sign them out everywhere:** Cloudflare → Zero Trust → Team & Resources → Users → find the person → **Revoke** sessions.
+2. **Remove them** from the `Allowed People` policy in both Access applications and from `ALLOWED_EMAILS` (Production and Preview), then retry both deployments.
+3. **Change the Google account's password** and check its security page for devices you don't recognise.
+4. **Look at the alert emails** for changes you didn't make, and use **Undo** in the admin area. Older changes can be reversed from GitHub's history.
+5. **If the GitHub token may have leaked:** GitHub → Settings → Developer settings → Fine-grained tokens → delete it, make a new one the same way (section A), put it in `GITHUB_TOKEN` for Production and Preview, and retry both deployments.
+6. **If the Resend key may have leaked:** delete it in Resend, create a new send-only key, and update `RESEND_API_KEY` the same way.

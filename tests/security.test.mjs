@@ -210,3 +210,87 @@ test("public pages escape every quote, and swap in real pages only", () => {
   assert.ok(js.includes(`"'": "&#39;"`));
   assert.ok(js.includes("Not a page"));
 });
+
+test("look-alike spaces and non-standard letter forms cannot make two names look the same", async () => {
+  const c = id();
+  const pic = async (kind, w, h) => (await (await post(upload, `/api/admin/upload?kind=${kind}&change=${c}`, jpegBase64(w, h, Math.random()))).json()).receipt;
+  const photos = [{ image: await pic("photo", 1600, 1200), thumb: await pic("thumb", 400, 300) }];
+  const ch = String.fromCharCode;
+  for (const title of [`Rally${ch(0xa0)}Cars`, `Rally${ch(0x2009)}Cars`, `Rally${ch(0x3000)}Cars`, "Rally  Cars", `Sea${ch(0x301)}n Radley`]) {
+    const r = await post(publish, "/api/admin/publish", JSON.stringify({ changeId: c, ops: [{ op: "addPhotos", newAlbum: title, photos }] }));
+    assert.equal((await r.json()).code, "bad_text", JSON.stringify(title));
+  }
+});
+
+test("changes faster than ten in ten minutes are refused, then allowed again", async () => {
+  const realNow = Date.now;
+  let clock = realNow();
+  Date.now = () => clock;
+  try {
+    const off = (i) => {
+      const date = new Date(Date.parse("2030-01-03T00:00:00Z") + i * 7 * 86400000).toISOString().slice(0, 10);
+      return post(publish, "/api/admin/publish", JSON.stringify({ changeId: id(), ops: [{ op: "oneOffOff", date, showId: "thu-danny-tobin-2100" }] }));
+    };
+    for (let i = 0; i < 10; i++) {
+      clock += 5000;
+      assert.equal((await off(i)).status, 200, `change ${i + 1}`);
+    }
+    const before = gh.head;
+    const refused = await off(10);
+    assert.equal(refused.status, 429);
+    assert.equal((await refused.json()).code, "busy");
+    assert.equal(gh.head, before);
+    const undoRefused = await post(undo, "/api/admin/undo", JSON.stringify({ changeId: id(), target: "secure-000000000001" }));
+    assert.equal(undoRefused.status, 429, "undo counts as a change too");
+    clock += 11 * 60 * 1000;
+    assert.equal((await off(11)).status, 200, "allowed again after the pause");
+  } finally {
+    Date.now = realNow;
+  }
+});
+
+test("no more than forty changes in a day", async () => {
+  const realNow = Date.now;
+  let clock = realNow();
+  Date.now = () => clock;
+  try {
+    const off = (i) => {
+      const date = new Date(Date.parse("2030-01-03T00:00:00Z") + i * 7 * 86400000).toISOString().slice(0, 10);
+      return post(publish, "/api/admin/publish", JSON.stringify({ changeId: id(), ops: [{ op: "oneOffOff", date, showId: "thu-danny-tobin-2100" }] }));
+    };
+    auth = await token("editor@example.com", 26 * 3600);
+    for (let i = 0; i < 40; i++) {
+      clock += 2 * 60 * 1000;
+      assert.equal((await off(i)).status, 200, `change ${i + 1}`);
+    }
+    clock += 2 * 60 * 1000;
+    assert.equal((await off(40)).status, 429);
+    clock += 24 * 3600 * 1000;
+    assert.equal((await off(41)).status, 200, "allowed again the next day");
+  } finally {
+    Date.now = realNow;
+  }
+});
+
+test("pages cannot be driven by a window another site opened", async () => {
+  assert.ok(fs.readFileSync(path.join(root, "site/_headers"), "utf8").includes("Cross-Origin-Opener-Policy: same-origin"));
+  const r = await adminPage({ env: ENV, request: new Request(HOME + "/admin/", { headers: { "Cf-Access-Jwt-Assertion": auth } }) });
+  assert.equal(r.headers.get("cross-origin-opener-policy"), "same-origin");
+});
+
+test("pages may read only from this site and the radio provider's song feed", () => {
+  const policy = fs.readFileSync(path.join(root, "site/_headers"), "utf8").match(/Content-Security-Policy: (.*)/)[1];
+  assert.match(policy, /connect-src 'self' https:\/\/www\.radiojar\.com;/);
+  assert.match(policy, /script-src 'self';/);
+  const config = fs.readFileSync(path.join(root, "site/data/config.js"), "utf8");
+  assert.match(config, /nowPlayingUrl: "https:\/\/www\.radiojar\.com\/api\/stations\/[a-z0-9]+\/now_playing\/"/);
+});
+
+test("the song line is escaped, trimmed and hidden when there is no title", () => {
+  const js = fs.readFileSync(path.join(root, "site/assets/site.js"), "utf8");
+  assert.ok(js.includes("esc(song.title)") && js.includes("esc(song.artist)"));
+  assert.ok(js.includes(".slice(0, 120)"));
+  assert.ok(js.includes("song = title ?"));
+  assert.ok(js.includes("unknown( artist)?") && js.includes("track ?[0-9]+"), "placeholder names are left out");
+  assert.ok(!/song\.(title|artist)\s*\+(?![^;]*esc)/.test(js.replace(/esc\(song\.(title|artist)\)/g, "")));
+});

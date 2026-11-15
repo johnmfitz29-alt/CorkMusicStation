@@ -16,8 +16,8 @@ export const ENV = {
   GITHUB_REPO: "o/r", GITHUB_TOKEN: "t", RECEIPT_KEY: "test-receipt-key", PUBLISH_BRANCH: "practice",
 };
 
-export async function token(email = "editor@example.com") {
-  const head = `${b({ alg: "RS256", kid: "k" })}.${b({ iss: `https://${TEAM}`, aud: ["a"], exp: Math.floor(Date.now() / 1000) + 3600, email })}`;
+export async function token(email = "editor@example.com", lifeSeconds = 3600) {
+  const head = `${b({ alg: "RS256", kid: "k" })}.${b({ iss: `https://${TEAM}`, aud: ["a"], exp: Math.floor(Date.now() / 1000) + lifeSeconds, email })}`;
   const sig = await globalThis.crypto.subtle.sign("RSASSA-PKCS1-v1_5", pair.privateKey, new TextEncoder().encode(head));
   return `${head}.${Buffer.from(sig).toString("base64url")}`;
 }
