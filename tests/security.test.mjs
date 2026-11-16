@@ -294,3 +294,61 @@ test("the song line is escaped, trimmed and hidden when there is no title", () =
   assert.ok(js.includes("unknown( artist)?") && js.includes("track ?[0-9]+"), "placeholder names are left out");
   assert.ok(!/song\.(title|artist)\s*\+(?![^;]*esc)/.test(js.replace(/esc\(song\.(title|artist)\)/g, "")));
 });
+
+// Third attack run, 16 November 2026.
+test("a name cannot be disguised with invisible characters or look-alike letters from other alphabets", async () => {
+  const { badText } = await import("../functions/_lib/text.js");
+  const cp = String.fromCodePoint;
+  const disguised = [
+    `Louise Mor${cp(0xad)}rissey`, // soft hyphen
+    `L${cp(0x43e)}uise Morrissey`, // Cyrillic o
+    `L${cp(0x3bf)}uise Morrissey`, // Greek omicron
+    `Louise${cp(0x3164)} Morrissey`, `Louise${cp(0x115f)} Morrissey`, `Louise${cp(0xffa0)} Morrissey`, // invisible "letters"
+    `Louise ${cp(0x61c)}Morrissey`, // direction mark
+    `Louise${cp(0x180e)} Morrissey`, `Louise${cp(0xfe0f)} Morrissey`, `Louise Morrissey${cp(0xe0041)}`, // invisible marks and tags
+    `Louise${cp(0x2800)} Morrissey`, `Louise${cp(0x34f)} Morrissey`, `Louise Morrissey${cp(0xfffc)}`, `Louise Morrissey${cp(0xe000)}`,
+    `Louise Morrissey${cp(0x336, 0x336, 0x336)}`, // stacked strike-through marks
+    `Louise Morrissey${String.fromCharCode(0xd800)}`, // half of a character
+    cp(0xff2c, 0xff4f, 0xff55), cp(0x1d40b, 0x1d428, 0x1d42e), // full-width and mathematical letters
+  ];
+  for (const name of disguised) assert.equal(badText(name), true, JSON.stringify(name));
+  const honest = [`Se${cp(0xe1)}n Radley`, `Gl${cp(0xf3)}r T${cp(0xed)}re`, "Barry O'Halloran", `Barry O${cp(0x2019)}Halloran`, "Foster & Allen", "Tipp F.M. Awards 2015 - Night 1", "Normand Boland", "Castleahan", `Caf${cp(0xe9)} 66 (Cork)`];
+  for (const name of honest) assert.equal(badText(name), false, name);
+
+  // The server refuses one, and the build check refuses one that reached a data file some other way.
+  const c = id();
+  const image = (await (await post(upload, `/api/admin/upload?kind=link&change=${c}`, jpegBase64(600, 600, 77))).json()).receipt;
+  const before = gh.head;
+  const r = await post(publish, "/api/admin/publish", JSON.stringify({ changeId: c, ops: [{ op: "addLink", name: disguised[1], image, pages: [{ type: "website", url: "https://www.example.ie/" }] }] }));
+  assert.equal((await r.json()).code, "bad_text");
+  assert.equal(gh.head, before);
+  const { checkSite } = await import("../tools/check-site.mjs");
+  const planted = `window.LINKS = [{"id":"a","name":${JSON.stringify(disguised[1])},"image":"images/links/694203117.png","pages":[{"type":"website","url":"https://example.ie/"}]}];`;
+  assert.ok(checkSite(root, { overrides: { "links.js": planted }, gitLog: "" }).failures.length > 0);
+});
+
+test("one change cannot bring in more pictures than one go of photos", async () => {
+  const c = id();
+  const pic = async (kind, w, h, seed) => (await (await post(upload, `/api/admin/upload?kind=${kind}&change=${c}`, jpegBase64(w, h, seed))).json()).receipt;
+  const four = [];
+  for (let k = 0; k < 4; k++) four.push({ image: await pic("photo", 800, 600, 300 + k), thumb: await pic("thumb", 200, 150, 400 + k) });
+  const sixty = Array.from({ length: 60 }, (_, k) => four[k % 4]);
+  const before = gh.head;
+  const files = gh.filesAt().size;
+  const tries = {
+    "the same pictures repeated across many steps": [Array.from({ length: 8 }, (_, k) => ({ op: "addPhotos", newAlbum: `Flood ${k + 1}`, photos: sixty })), true],
+    "two full albums in one change": [[{ op: "addPhotos", newAlbum: "One", photos: sixty }, { op: "addPhotos", newAlbum: "Two", photos: sixty }], true],
+  };
+  for (const [name, [ops, allowDuplicate]] of Object.entries(tries)) {
+    const r = await post(publish, "/api/admin/publish", JSON.stringify({ changeId: c, ops, allowDuplicate }));
+    assert.equal(r.status, 422, name);
+    assert.equal((await r.json()).code, "photo_count", name);
+  }
+  assert.equal(gh.head, before);
+  assert.equal(gh.filesAt().size, files);
+
+  // A full go of 60 still works.
+  const ok = await post(publish, "/api/admin/publish", JSON.stringify({ changeId: c, ops: [{ op: "addPhotos", newAlbum: "Sixty", photos: sixty }], allowDuplicate: true }));
+  assert.equal(ok.status, 200);
+  assert.equal(gh.filesAt().size, files + 120 + 2); // 120 pictures, the change log and the version file
+});
