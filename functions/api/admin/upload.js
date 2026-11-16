@@ -7,7 +7,7 @@ import { inspectJpegBase64 } from "../../_lib/jpeg.js";
 import { signReceipt } from "../../_lib/receipts.js";
 
 const MAX_BASE64 = 700000;
-const LIMITS = { poster: [800, 4000], photo: [600, 4000], thumb: [80, 800], presenter: [200, 4000] };
+const LIMITS = { poster: [800, 4000], photo: [600, 4000], thumb: [80, 800], presenter: [200, 4000], link: [200, 4000] };
 
 export async function onRequestPost(context) {
   const login = await requireLogin(context);

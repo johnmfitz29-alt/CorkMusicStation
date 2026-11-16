@@ -291,6 +291,21 @@
     lb.addEventListener("close", function () { img.removeAttribute("src"); });
   }
 
+  /* A website shows its own address. The others show the name of the service. */
+  var PAGE_NAMES = { facebook: "Facebook", youtube: "YouTube", instagram: "Instagram", tiktok: "TikTok", spotify: "Spotify" };
+  function renderLinks() {
+    var box = el("links");
+    if (!box || !window.LINKS) return;
+    box.innerHTML = window.LINKS.map(function (l) {
+      var pages = l.pages.map(function (p) {
+        if (String(p.url).indexOf("https://") !== 0) return "";
+        var label = p.type === "website" ? esc(p.url.slice(8).split("/").filter(Boolean).join("/")) : PAGE_NAMES[p.type];
+        return label ? '<p><a target="_blank" rel="noopener" href="' + esc(p.url) + '">' + label + "</a></p>" : "";
+      }).join("");
+      return '<div class="link-card"><img src="' + esc(l.image) + '" alt="' + esc(l.name) + '" loading="lazy"><div><h2>' + esc(l.name) + "</h2>" + pages + "</div></div>";
+    }).join("");
+  }
+
   function renderRotator() {
     clearInterval(rotatorTimer); rotatorTimer = null;
     var box = el("rotator");
@@ -323,6 +338,7 @@
     renderArchives();
     renderGallery();
     renderRotator();
+    renderLinks();
   }
 
   /* ---------- Moving between pages without stopping the radio. Addresses stay the same. ---------- */

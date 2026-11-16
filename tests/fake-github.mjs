@@ -38,11 +38,11 @@ export class FakeGitHub {
     this.failAt = null;
 
     const files = new Map();
-    for (const name of ["schedule.js", "posters.js", "gallery.js", "home-photos.js"]) {
+    for (const name of ["schedule.js", "posters.js", "gallery.js", "home-photos.js", "links.js"]) {
       const text = fs.readFileSync(path.join(root, "site/data", name), "utf8");
       files.set(`site/data/${name}`, this.blob(text));
     }
-    for (const folder of ["posters", "gallery", "collection", "presenters"]) {
+    for (const folder of ["posters", "gallery", "collection", "presenters", "links"]) {
       for (const name of fs.readdirSync(path.join(root, "site/images", folder))) {
         files.set(`site/images/${folder}/${name}`, this.blob(`image ${folder}/${name}`));
       }

@@ -9,6 +9,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { parseDataFile } from "../functions/_lib/datafile.js";
 import { isAllowedWrite } from "../functions/_lib/paths.js";
+import { LINK_TYPES, cleanPageUrl } from "../functions/_lib/links.js";
 
 const FILE_LIMIT = 20000;
 const FILE_WARN = 18000;
@@ -196,6 +197,28 @@ export function checkSite(root, { overrides = {}, gitLog } = {}) {
       needImage(`home-photos.js item ${i + 1}`, p.src);
       needImage(`home-photos.js thumb ${i + 1}`, p.thumb);
     });
+  }
+
+  const links = read("links.js", "LINKS");
+  if (links) {
+    if (!Array.isArray(links)) fail("links.js: must be a list");
+    else {
+      const ids = new Set();
+      links.forEach((l, i) => {
+        const where = `links.js entry ${i + 1}`;
+        if (typeof l.id !== "string" || !l.id || ids.has(l.id)) fail(`${where}: missing or repeated id`);
+        ids.add(l.id);
+        needText(`${where} name`, l.name);
+        needImage(where, l.image);
+        if (!Array.isArray(l.pages) || l.pages.length < 1) return fail(`${where}: has no pages`);
+        const seen = new Set();
+        l.pages.forEach((p) => {
+          if (!LINK_TYPES.includes(p.type) || seen.has(p.type)) fail(`${where}: unknown or repeated kind of page ${p.type}`);
+          seen.add(p.type);
+          if (cleanPageUrl(p.type, p.url) !== p.url) fail(`${where}: address not allowed for ${p.type}: ${p.url}`);
+        });
+      });
+    }
   }
 
   const files = walk(siteDir);

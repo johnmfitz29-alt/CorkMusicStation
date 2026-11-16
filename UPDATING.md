@@ -65,6 +65,10 @@ The radio tries to start when the site opens. Most browsers wait for the visitor
 
 The photos that rotate on the home page are listed in `site/data/home-photos.js`. The updating app planned for later will let you choose them.
 
+## Links
+
+Use the **Links** button in the updating app to add, change or take down a link. The entries are kept in `site/data/links.js`. Each has a name, a picture in `site/images/links/`, and pages whose `type` is `website`, `facebook`, `youtube`, `instagram`, `tiktok` or `spotify`. Every address must start with `https://`.
+
 ## If something stops working
 
 A missing comma or quotation mark in one of these files stops that part of the page from appearing. Check the line you last changed against the examples above, or undo your change.

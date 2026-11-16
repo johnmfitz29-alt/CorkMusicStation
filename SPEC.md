@@ -399,3 +399,16 @@ Found on the live site: adding a show for a new presenter and then undoing it re
 A show is no longer put back if its photo is missing from the site and cannot be restored with it, which would have broken the next build. The leftover photo from the live test was removed, so the "undid: added F" entry can no longer be re-done, and says so safely if tried.
 
 Tested against the stand-in GitHub for weekly and one-date shows, including redo, a photo shared with another show, and existing presenters. Not yet run on Cloudflare.
+
+## 21. Links, a sixth button (15 November 2026)
+
+The owner asked for the Links page to take social media pages, chosen when a link is created and editable afterwards. This adds a sixth button, **Links**, so the home screen and the printed card now have six.
+
+- **An entry** is a name, a required picture, and one page of each kind at most: Website, Facebook, YouTube, Instagram, TikTok, Spotify. On the public page a website shows its own address and the others show the name of the service. Links open in a new tab.
+- **He can** add an entry, change its name, picture or pages, remove a page, and take an entry down. Every change has the usual read-back, Undo and alert email. New names are sent to the owner.
+- **Addresses** must be `https`, with no sign-in details or port. Each social kind accepts only that service's own addresses. He can type or paste without the `https://`. The server and the build check apply the same rules.
+- **The two existing entries** moved unchanged from the page into `site/data/links.js`.
+- **Limits:** 60 entries.
+- **Saved as he goes:** the name, picture and pages are kept after every step, so a closed window brings back "You were working on a link. Carry on?" for a new link or a change. Tested in a browser for both.
+
+Tested: 9 new automated tests, including 26 unsafe or wrong addresses, and the full flow in a browser against the stand-in GitHub (add with a picture, a repeated name, wrong-service and `javascript:` addresses, change, remove a page, Undo, and the public page at phone width). Not yet run on Cloudflare.

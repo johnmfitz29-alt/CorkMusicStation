@@ -201,7 +201,8 @@ main { padding: 26px 0 48px; }
 .link-card { padding: 20px; display: grid; gap: 14px; background: var(--card); border-radius: var(--r-panel); }
 .link-card img { max-height: 200px; width: auto; border-radius: var(--r-photo); }
 .link-card h2 { margin-bottom: 6px; }
-.link-card p { margin: 0; }
+.link-card p { margin: 0 0 8px; }
+.link-card p:last-child { margin-bottom: 0; }
 .link-card a { font-size: .92em; }
 a[href^="mailto:"] { font-size: .94em; }
 
