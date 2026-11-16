@@ -3,9 +3,12 @@
 // Steps whose names start with "_" exist only for Undo and are refused from the browser.
 
 import { LINK_TYPES, cleanPageUrl } from "./links.js";
+import { badText } from "./text.js";
 import { DAYS, dateClash, hhmm, irishToday, mins, realDate, timeText, validTimes, weekdayOf, weeklyClash } from "./schedule.js";
 
 const MAX_PHOTOS = 60;
+// One change brings in at most one go of photos (each with a small copy) plus a couple of single pictures.
+export const MAX_NEW_FILES = MAX_PHOTOS * 2 + 4;
 const MIN_HOME = 3;
 const DEFAULT_CONTACT = "For Requests Email {email}";
 const ADDED_PRESENTER_PHOTO = /^images\/presenters\/[0-9a-f]{16}(-[a-z0-9-]+)?\.jpg$/;
@@ -18,9 +21,6 @@ export class Refusal extends Error {
   }
 }
 const refuse = (code, detail) => { throw new Refusal(code, detail); };
-// Markup, control characters, look-alike spaces, and the invisible and direction-flipping characters
-// used to disguise text or to make two names look the same.
-const HIDDEN_OR_MARKUP = /[<>\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/;
 
 const NEEDS = {
   addPoster: ["posters"], removePoster: ["posters"], _posterRestore: ["posters"],
@@ -55,7 +55,7 @@ export function receiptsIn(ops) {
 }
 
 function text(value, label, max = 120) {
-  if (typeof value !== "string" || !value.trim() || value !== value.trim() || value.length > max || HIDDEN_OR_MARKUP.test(value) || value !== value.normalize("NFC") || value.includes("  ")) {
+  if (typeof value !== "string" || !value.trim() || value !== value.trim() || value.length > max || badText(value) || value.includes("  ")) {
     refuse("bad_text", label);
   }
   return value;
@@ -70,6 +70,7 @@ export function applyOps(state, ops, ctx) {
   const images = [];
   const newNames = [];
   let serial = 0;
+  let brought = 0;
   const today = ctx.today || irishToday();
   const { tree, receipts, changeId } = ctx;
 
@@ -84,6 +85,7 @@ export function applyOps(state, ops, ctx) {
       file = `images/${folder}/${r.sha.slice(0, 16)}-${changeId.slice(0, 6)}-${++serial}${suffix}.jpg`;
     }
     images.push({ path: site(file), sha: r.sha, action: "create" });
+    if (++brought > MAX_NEW_FILES) refuse("photo_count");
     return { file, w: r.w, h: r.h };
   }
 

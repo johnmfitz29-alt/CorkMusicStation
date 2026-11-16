@@ -3,7 +3,7 @@
 import { parseDataFile, replaceDataFile } from "./datafile.js";
 import { emailOwner } from "./email.js";
 import { GitHubProblem, gitHub, publishBranch } from "./github.js";
-import { Refusal, applyOps, describe, neededFiles, receiptsIn } from "./ops.js";
+import { MAX_NEW_FILES, Refusal, applyOps, describe, neededFiles, receiptsIn } from "./ops.js";
 import { isAllowedWrite } from "./paths.js";
 import { readReceipt } from "./receipts.js";
 
@@ -59,7 +59,10 @@ export function undoable(log, index) {
 
 async function verifyReceipts(env, ops) {
   const out = new Map();
-  for (const ref of receiptsIn(ops)) {
+  const refs = receiptsIn(ops);
+  // Refused before any checking, so a flood of pictures costs nothing.
+  if (refs.length > MAX_NEW_FILES) throw new Refusal("photo_count");
+  for (const ref of refs) {
     const payload = await readReceipt(env.RECEIPT_KEY, ref);
     if (!payload) throw new Refusal("bad_receipt");
     out.set(ref, payload);

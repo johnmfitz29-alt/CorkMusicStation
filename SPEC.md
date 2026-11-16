@@ -412,3 +412,29 @@ The owner asked for the Links page to take social media pages, chosen when a lin
 - **Saved as he goes:** the name, picture and pages are kept after every step, so a closed window brings back "You were working on a link. Carry on?" for a new link or a change. Tested in a browser for both.
 
 Tested: 9 new automated tests, including 26 unsafe or wrong addresses, and the full flow in a browser against the stand-in GitHub (add with a picture, a repeated name, wrong-service and `javascript:` addresses, change, remove a page, Undo, and the public page at phone width). Not yet run on Cloudflare.
+
+## 22. Third security test (16 November 2026)
+
+The owner asked for attacks not tried before. Run against the live address from outside, the admin functions on this computer against the stand-in GitHub, the public pages in a browser, and GitHub's settings.
+
+**Found and fixed in code (not yet live)**
+
+| Flaw | Fix |
+|---|---|
+| A name could be disguised so that it looked identical to an existing one: a Cyrillic or Greek letter in place of a Latin one, a soft hyphen, invisible "filler" letters, direction marks, tag characters, stacked accents, full-width or mathematical letters. Ten of twenty disguises tried were accepted before the change limit cut the test short | One shared rule, `functions/_lib/text.js`, used by the functions and the build check. Letters must be Latin (fadas included), and invisible, stacking and styled characters are refused. All 1,403 pieces of text now on the site pass it |
+| One change could bring in far more pictures than the 60 a go allows, by repeating steps: 962 files in a single change in testing, with room for about 1,300. A stolen login could have passed the host's 20,000-file limit in a day | One change may bring in at most 124 new pictures (one go of 60 with their small copies, plus four). Refused before any picture is checked |
+
+**Held without changes**
+- **Live address:** 13 attempts to turn the `.html` redirect into a redirect to another site, a wrong `Host`, forwarded-host and rewrite headers, cache poisoning, 14 project files that must not be served (`.git`, `functions/`, tests, `_headers`), folder listings, and six methods other than GET.
+- **Functions:** the same change sent three times at once (one commit), 14 changes at once against the 10-in-10-minutes limit (4 made, the rest refused), the same change undone twice at once (one copy restored), 13 malformed bodies meant to crash a function (100,000 nested brackets, huge numbers, duplicate and `__proto__` keys, lists where text belongs), odd upload kinds, a thumbnail passed off as a full photo, and a picture checked for one change used in another.
+- **Pages:** the admin screens never turn text into markup. On the public pages the email address still shows correctly after moving between pages.
+- **GitHub:** one collaborator, no deploy keys or webhooks, Actions off, secret scanning and push protection on, both rulesets active, and no personal address or key anywhere in the history.
+
+**Accepted, with the reason**
+- A picture sent with line breaks through its text is accepted. The bytes checked are the bytes stored, so nothing gets past the check.
+- Emoji are still allowed in names.
+- Anyone can read `data/change-log.js`. It holds no names of people who made changes and no secrets.
+
+**Suggestions, owner's choice:** a CAA record naming the certificate authorities Cloudflare uses, and a `security.txt` contact file. Both are optional.
+
+**Not tested:** anything behind the login on the live or practice sites, because Claude has no login. These fixes have not run on Cloudflare.
